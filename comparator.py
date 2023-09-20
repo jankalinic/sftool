@@ -1,8 +1,4 @@
 import cv2
-from PIL import Image
-
-TV_IMAGE_DIMENSIONS = {'left': 0, 'top': 0, 'right': 1080, 'bottom': 500}
-
 
 class CompareImage(object):
 
@@ -33,17 +29,3 @@ class CompareImage(object):
         # taking only 10% of histogram diff, since it's less accurate than template method
         commutative_image_diff = (img_hist_diff / 10) + img_template_diff
         return commutative_image_diff
-
-
-if __name__ == '__main__':
-
-    CompareImage.crop_screenshot(TV_IMAGE_DIMENSIONS, '/Users/jkalinic-mac/mouseclicker/screenshots/mujscreen4.png', '/Users/jkalinic-mac/mouseclicker/screenshots/crop.png')
-    compare_image = CompareImage('/Users/jkalinic-mac/mouseclicker/original/colorTV.png',  '/Users/jkalinic-mac/mouseclicker/screenshots/crop.png')
-    image_difference = compare_image.compare_image()
-
-    if image_difference < 0.08:
-        print("SIMILAR")
-    else:
-        print("NOT")
-
-    print(image_difference)

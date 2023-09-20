@@ -1,0 +1,9 @@
+DEBUG:root:ADB is installed.
+INFO:root:Running loop for: {'emulator': 'emulator-5554', 'state': 'device'}
+DEBUG:root:Program status: Still running.
+DEBUG:root:[emulator-5554] is attached
+DEBUG:root:Program status: Still running.
+DEBUG:root:Program status: Still running.
+DEBUG:root:Program status: Ending program.
+INFO:root:Started bot
+DEBUG:root:ADB is installed.
