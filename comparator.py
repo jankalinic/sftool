@@ -1,32 +1,49 @@
 import cv2
-from skimage.metrics import structural_similarity
-import numpy as np
+from PIL import Image
+
+TV_IMAGE_DIMENSIONS = {'left': 0, 'top': 0, 'right': 1080, 'bottom': 500}
+
+
+class CompareImage(object):
+
+    def __init__(self, image_1_path, image_2_path):
+        self.minimum_commutative_image_diff = 1
+        self.image_1_path = image_1_path
+        self.image_2_path = image_2_path
+
+    def compare_image(self):
+        image_1 = cv2.imread(self.image_1_path, 0)
+        image_2 = cv2.imread(self.image_2_path, 0)
+        commutative_image_diff = self.get_image_difference(image_1, image_2)
+
+        if commutative_image_diff < self.minimum_commutative_image_diff:
+            print("Matched")
+            return commutative_image_diff
+        return 10000
+
+    @staticmethod
+    def get_image_difference(image_1, image_2):
+        first_image_hist = cv2.calcHist([image_1], [0], None, [256], [0, 256])
+        second_image_hist = cv2.calcHist([image_2], [0], None, [256], [0, 256])
+
+        img_hist_diff = cv2.compareHist(first_image_hist, second_image_hist, cv2.HISTCMP_BHATTACHARYYA)
+        img_template_probability_match = cv2.matchTemplate(first_image_hist, second_image_hist, cv2.TM_CCOEFF_NORMED)[0][0]
+        img_template_diff = 1 - img_template_probability_match
+
+        # taking only 10% of histogram diff, since it's less accurate than template method
+        commutative_image_diff = (img_hist_diff / 10) + img_template_diff
+        return commutative_image_diff
+
 
 if __name__ == '__main__':
 
-    crop_screenshot()
-    image1 = cv2.imread(CROPPED_SCREENSHOT)
-    image2 = cv2.imread(ORIGINAL_TV)
-    # Convert the images to grayscale
-    gray_image1 = cv2.cvtColor(image1, cv2.COLOR_BGR2GRAY)
-    gray_image2 = cv2.cvtColor(image2, cv2.COLOR_BGR2GRAY)
+    CompareImage.crop_screenshot(TV_IMAGE_DIMENSIONS, '/Users/jkalinic-mac/mouseclicker/screenshots/mujscreen4.png', '/Users/jkalinic-mac/mouseclicker/screenshots/crop.png')
+    compare_image = CompareImage('/Users/jkalinic-mac/mouseclicker/original/colorTV.png',  '/Users/jkalinic-mac/mouseclicker/screenshots/crop.png')
+    image_difference = compare_image.compare_image()
 
-    w, h = gray_image2.shape[::-1]
-
-    # Match the template (original image) within the screenshot
-    result = cv2.matchTemplate(gray_image1, gray_image2, cv2.TM_CCOEFF_NORMED)
-
-    # Define a threshold for similarity
-    similarity_threshold = 0.2  # Adjust this threshold as needed
-
-    # Find the locations where the similarity score is greater than the threshold
-    locations = np.where(result > similarity_threshold)
-
-    if len(locations) > 0:
-        print('The original image (or something very similar) is present in the screenshot.')
+    if image_difference < 0.08:
+        print("SIMILAR")
     else:
-        print('The original image is not present in the screenshot.')
+        print("NOT")
 
-    for pt in zip(*locations[::-1]):
-        cv2.rectangle(image1, pt, (pt[0] + w, pt[1] + h), (0, 0, 255), 2)
-    cv2.imwrite('res.png', image1)
+    print(image_difference)
