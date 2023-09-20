@@ -1,7 +1,7 @@
 import cv2
 
-class CompareImage(object):
 
+class CompareImage(object):
     def __init__(self, image_1_path, image_2_path):
         self.minimum_commutative_image_diff = 1
         self.image_1_path = image_1_path
