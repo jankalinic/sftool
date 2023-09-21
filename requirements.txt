@@ -2,3 +2,5 @@ Pillow
 numpy
 opencv-python
 adbutils
+//AI
+//sentence-transformers

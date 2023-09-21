@@ -2,7 +2,7 @@ import os
 
 # PATHS
 SFTOOL_DIR_PATH = os.path.dirname(__file__)
-IMAGES_DIR_PATH = os.path.join(SFTOOL_DIR_PATH, "images")
+IMAGES_DIR_PATH = os.path.join(SFTOOL_DIR_PATH, "../images")
 ORIGINAL_DIR_PATH = os.path.join(IMAGES_DIR_PATH, "original")
 # original constant images - readonly files
 ORIGINAL_TV_IMAGE_PATH = os.path.join(ORIGINAL_DIR_PATH, "colorTV.png")
