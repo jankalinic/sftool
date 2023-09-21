@@ -29,3 +29,4 @@ class CompareImage(object):
         # taking only 10% of histogram diff, since it's less accurate than template method
         commutative_image_diff = (img_hist_diff / 10) + img_template_diff
         return commutative_image_diff
+
