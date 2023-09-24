@@ -3,10 +3,12 @@ import os
 import adbutils
 import subprocess
 import time
+from PIL import Image, ImageEnhance
+import pytesseract
 
-import constants as const
-from custom_logger import logger
-from image_comparator import CompareImage
+from common import constants as const
+from common.custom_logger import logger
+from common.image_comparator import CompareImage
 
 
 def check_cli_tools_installed():
@@ -81,7 +83,7 @@ def crop_screenshot(emulator_device, dimensions, suffix):
     logger.debug(f"[{emulator_device.serial}] Execution of cropping took: {time.time() - start_time:.6f} seconds")
 
 
-def are_images_similar(emulator_device, first_image, second_image, threshhold):
+def are_images_similar(emulator_device, first_image, second_image, threshold):
     start_time = time.time()  # Record the start time
 
     compare_image = CompareImage(first_image, second_image)
@@ -90,7 +92,7 @@ def are_images_similar(emulator_device, first_image, second_image, threshhold):
 
     logger.debug(f"[{emulator_device.serial}]: Execution of comparing took: {time.time() - start_time:.6f} seconds")
 
-    return image_difference < threshhold
+    return image_difference < threshold
 
 
 def crop_menu_button(emulator_device):
@@ -99,9 +101,51 @@ def crop_menu_button(emulator_device):
 
 def is_in_tavern(emulator_device):
     logger.debug(f"[{emulator_device.serial}]: Looking for menu button")
-    # need to check better for gambler or something
-    return are_images_similar(emulator_device, get_cropped_screenshot_path(emulator_device, const.MENU_BUTTON_SUFFIX), const.ORIGINAL_MENU_BUTTON_IMAGE_PATH, const.MENU_BUTTON_IMAGE_DIFF_THRESHOLD)
+
+    if are_images_similar(emulator_device,
+                           get_cropped_screenshot_path(emulator_device, const.MENU_BUTTON_SUFFIX),
+                           const.ORIGINAL_MENU_BUTTON_NOTIFICATION_IMAGE_PATH,
+                           const.MENU_BUTTON_IMAGE_DIFF_THRESHOLD):
+        logger.debug(f"[{emulator_device.serial}]: You have a notification")
+
+        return True
+
+    return are_images_similar(emulator_device,
+                              get_cropped_screenshot_path(emulator_device, const.MENU_BUTTON_SUFFIX),
+                              const.ORIGINAL_MENU_BUTTON_IMAGE_PATH,
+                              const.MENU_BUTTON_IMAGE_DIFF_THRESHOLD)
+
 
 
 def get_npc_image_path(npc_name):
     return os.path.join(const.ORIGINAL_NPC_DIR_PATH, npc_name) + const.IMAGE_EXTENSION
+
+
+def get_contrasted_image_path(image_path):
+    return image_path.split(const.IMAGE_EXTENSION)[0] + "_contrasted" + const.IMAGE_EXTENSION
+
+
+def enhance_image_contrast(image_path):
+    start_time = time.time()
+    image = Image.open(image_path)
+    im_output = ImageEnhance.Contrast(image).enhance(3)
+    im_output.save(get_contrasted_image_path(image_path))
+    print(f"Execution of contrast enhancing: {time.time() - start_time:.6f} seconds")
+
+
+def get_number_from_image(image_path):
+    enhance_image_contrast(image_path)
+    image = Image.open(get_contrasted_image_path(image_path))
+    text = pytesseract.image_to_string(image, config='--psm 6')
+
+    if "," in text:
+        numeric_text = text.replace("\n", "").replace(",", ".")
+        return float(numeric_text)
+
+    elif ":" in text:
+        numeric_text = text.replace("\n", "").split(":")
+        return (int(numeric_text[0]) * 60) + int(numeric_text[1])
+
+    else:
+        return int(''.join(filter(str.isdigit, text)))
+

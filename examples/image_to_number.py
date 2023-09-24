@@ -2,6 +2,8 @@ import os
 import time
 from PIL import Image, ImageEnhance
 import pytesseract
+import threading
+
 import common.constants as const
 
 
@@ -44,9 +46,6 @@ if __name__ == '__main__':
     # whole => x:136 y:1243 - x:313 y:1465 = 180x222 left:130 top:1243
     # gold => y = 1243 - 1292 = 180x49 ==== 180x49+136+1243
     # exp => y= 1316 - 1386 = 180x49 ==== 180x49+136+1316
-    #time y = 1395 - 1460 = 180x49 ====== 180x49+136+1395
-    #want x:755 y: 1578 - x:833 y:1526 ======
-
     start_time = time.time()
     number = get_number_from_image(IMAGE_PATH)
     print(f"Extracted number: {number}")
