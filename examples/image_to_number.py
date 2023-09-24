@@ -13,7 +13,7 @@ def enhance_image_contrast(image_path):
 
     factor = 3  # increase contrast
     im_output = enhancer.enhance(factor)
-    im_output.save(image_path.split(".")[0] + "_contrasted" + const.IMAGE_EXTENSION)
+    im_output.save(image_path.split(const.IMAGE_EXTENSION)[0] + "_contrasted" + const.IMAGE_EXTENSION)
     end_time = time.time()  # Record the end time
     execution_time = end_time - start_time
     print(f"Execution of contrast enhancing: {execution_time:.6f} seconds")
