@@ -45,6 +45,7 @@ if __name__ == '__main__':
     # gold => y = 1243 - 1292 = 180x49 ==== 180x49+136+1243
     # exp => y= 1316 - 1386 = 180x49 ==== 180x49+136+1316
     #time y = 1395 - 1460 = 180x49 ====== 180x49+136+1395
+    #want x:755 y: 1578 - x:833 y:1526 ======
 
     start_time = time.time()
     number = get_number_from_image(IMAGE_PATH)
