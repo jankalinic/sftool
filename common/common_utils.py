@@ -116,7 +116,6 @@ def is_in_tavern(emulator_device):
                               const.MENU_BUTTON_IMAGE_DIFF_THRESHOLD)
 
 
-
 def get_npc_image_path(npc_name):
     return os.path.join(const.ORIGINAL_NPC_DIR_PATH, npc_name) + const.IMAGE_EXTENSION
 
@@ -135,20 +134,31 @@ def enhance_image_contrast(image_path):
 
 def get_number_from_image(image_path):
 
-    enhance_image_contrast(image_path)
-    image = Image.open(get_contrasted_image_path(image_path))
+    # enhance_image_contrast(image_path)
+    image = Image.open(image_path)
     text = pytesseract.image_to_string(image, config='--psm 6')
+    text = text.replace("\n", "")
 
     if "," in text:
-        numeric_text = text.replace("\n", "").replace(",", ".")
+        numeric_text = text.replace(",", ".")
         return float(numeric_text)
 
+    elif "." in text:
+        return float(text)
+
     elif ":" in text:
-        numeric_text = text.replace("\n", "").split(":")
+        numeric_text = text.split(":")
         return (int(numeric_text[0]) * 60) + int(numeric_text[1])
 
     else:
         return int(''.join(filter(str.isdigit, text)))
+
+
+def is_in_quest_selection(emulator_device):
+    return are_images_similar(emulator_device,
+                              get_cropped_screenshot_path(emulator_device, const.ACCEPT_QUEST_BUTTON[const.NAME_KEY]),
+                              const.ACCEPT_QUEST_BUTTON[const.PATH_KEY],
+                              const.QUEST_DIFF_THRESHOLD)
 
 
 def go_to_tavern_using_key(emulator_device):
@@ -157,13 +167,85 @@ def go_to_tavern_using_key(emulator_device):
     # first leave the tavern to exit without clicking on close and then go back using t
     adm_command = f"adb -s {emulator_device.serial} shell input text 'a'"
     subprocess.run(adm_command, shell=True, check=True)
+    time.sleep(1)
 
     adm_command = f"adb -s {emulator_device.serial} shell input text 't'"
     subprocess.run(adm_command, shell=True, check=True)
+    time.sleep(1)
 
     take_screenshot(emulator_device)
     crop_menu_button(emulator_device)
 
-    if not is_in_tavern(emulator_device):
+    if not is_in_tavern(emulator_device) or is_in_quest_selection(emulator_device):
         logger.debug(f"[{emulator_device.serial}]: Pressing 't' did not work")
         go_to_tavern_using_key(emulator_device)
+
+
+def crop_close_ad(emulator_device):
+    crop_screenshot(emulator_device, const.CLOSE_AD_DIMENSIONS, const.CLOSE_AD_SUFFIX)
+
+
+def is_close_ad_present(emulator_device):
+    logger.debug(f"[{emulator_device.serial}]: Looking for AD close button")
+
+    for image in const.ORIGINAL_CLOSE_AD_IMAGES_PATHS:
+        if are_images_similar(emulator_device,
+                                   get_cropped_screenshot_path(emulator_device, const.CLOSE_AD_SUFFIX),
+                                   image,
+                                   const.CLOSE_AD_DIFF_THRESHOLD):
+            # This is redundant check to make sure it's not the main exit button
+            if not are_images_similar(emulator_device,
+                                        get_cropped_screenshot_path(emulator_device, const.CLOSE_AD_SUFFIX),
+                                        const.ORIGINAL_DONT_CLOSE_ADD_BUTTON_IMAGE_PATH,
+                                        const.CLOSE_AD_DIFF_THRESHOLD):
+                return True
+    return False
+
+
+def click_exit_ad(emulator_device):
+    logger.debug(f"[{emulator_device.serial}]: exiting AD")
+    emulator_device.click(const.CLOSE_AD_LOCATION[const.X_KEY], const.CLOSE_AD_LOCATION[const.Y_KEY])
+
+
+def close_ad_if_playing(emulator_device):
+    logger.debug(f"[{emulator_device.serial}]: close ad if playing")
+    take_screenshot(emulator_device)
+    crop_close_ad(emulator_device)
+
+    if is_close_ad_present(emulator_device):
+        logger.debug(f"[{emulator_device.serial}]: closing ad")
+        click_exit_ad(emulator_device)
+        time.sleep(2)
+        close_ad_if_playing(emulator_device)
+    else:
+        logger.debug(f"[{emulator_device.serial}]: ad is not playing")
+        crop_menu_button(emulator_device)
+        if is_in_tavern(emulator_device):
+            logger.debug(f"[{emulator_device.serial}]: is in tavern")
+
+
+def clean_directory(directory_path):
+    try:
+        # List all files and subdirectories in the directory
+        items = os.listdir(directory_path)
+
+        # Loop through each item in the directory
+        for item in items:
+            item_path = os.path.join(directory_path, item)
+
+            # Check if it's a file and delete it
+            if os.path.isfile(item_path):
+                os.remove(item_path)
+
+            # Check if it's a subdirectory and recursively clean it
+            elif os.path.isdir(item_path):
+                clean_directory(item_path)
+
+        logger.debug(f"Directory cleaned: {directory_path}")
+
+    except Exception as e:
+        logger.error(f"An error occurred while cleaning the directory: {e}")
+
+
+def clean_screenshots():
+    clean_directory(const.SCREENSHOT_DIR_PATH)

@@ -8,13 +8,21 @@ class CompareImage(object):
         self.image_2_path = image_2_path
 
     def compare_image(self):
-        image_1 = cv2.imread(self.image_1_path, 0)
-        image_2 = cv2.imread(self.image_2_path, 0)
-        commutative_image_diff = self.get_image_difference(image_1, image_2)
+        try:
+            image_1 = cv2.imread(self.image_1_path, 0)
+            image_2 = cv2.imread(self.image_2_path, 0)
 
-        if commutative_image_diff < self.minimum_commutative_image_diff:
-            return commutative_image_diff
-        return 10000
+            if len(image_1) == 0 or len(image_2) == 0:
+                return 9999
+
+            commutative_image_diff = self.get_image_difference(image_1, image_2)
+
+            if commutative_image_diff < self.minimum_commutative_image_diff:
+                return commutative_image_diff
+            return 10000
+
+        except:
+            return 9999
 
     @staticmethod
     def get_image_difference(image_1, image_2):
