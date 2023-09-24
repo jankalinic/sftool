@@ -1,3 +1,5 @@
+import os
+
 import adbutils
 import subprocess
 import time
@@ -89,3 +91,17 @@ def are_images_similar(emulator_device, first_image, second_image, threshhold):
     logger.debug(f"[{emulator_device.serial}]: Execution of comparing took: {time.time() - start_time:.6f} seconds")
 
     return image_difference < threshhold
+
+
+def crop_menu_button(emulator_device):
+    crop_screenshot(emulator_device, const.MENU_BUTTON_IMAGE_DIMENSIONS, const.MENU_BUTTON_SUFFIX)
+
+
+def is_in_tavern(emulator_device):
+    logger.debug(f"[{emulator_device.serial}]: Looking for menu button")
+    # need to check better for gambler or something
+    return are_images_similar(emulator_device, get_cropped_screenshot_path(emulator_device, const.MENU_BUTTON_SUFFIX), const.ORIGINAL_MENU_BUTTON_IMAGE_PATH, const.MENU_BUTTON_IMAGE_DIFF_THRESHOLD)
+
+
+def get_npc_image_path(npc_name):
+    return os.path.join(const.ORIGINAL_NPC_DIR_PATH, npc_name) + const.IMAGE_EXTENSION

@@ -1,14 +1,24 @@
 import os
 
 # PATHS
+IMAGE_EXTENSION = ".png"
+
 SFTOOL_DIR_PATH = os.path.join(os.path.dirname(__file__), "../")
 IMAGES_DIR_PATH = os.path.join(SFTOOL_DIR_PATH, "images")
 ORIGINAL_DIR_PATH = os.path.join(IMAGES_DIR_PATH, "original")
+
+ORIGINAL_NPC_DIR_PATH = os.path.join(ORIGINAL_DIR_PATH, "npc")
+ORIGINAL_ADS_DIR_PATH = os.path.join(ORIGINAL_DIR_PATH, "ads")
+ORIGINAL_QUESTS_DIR_PATH = os.path.join(ORIGINAL_DIR_PATH, "quests")
+
+
 # original constant images - readonly files
-ORIGINAL_TV_IMAGE_PATH = os.path.join(ORIGINAL_DIR_PATH, "colorTV.png")
-# Tavern homebutton
-ORIGINAL_MENU_BUTTON_IMAGE_PATH = os.path.join(IMAGES_DIR_PATH, "original", "menuButton.png")
-DONT_CLOSE_ADD_BUTTON_PATH = os.path.join(IMAGES_DIR_PATH, "original", "dontCloseButton.png")
+ORIGINAL_TV_IMAGE_PATH = os.path.join(ORIGINAL_ADS_DIR_PATH, "colorTV.png")
+ORIGINAL_MENU_BUTTON_IMAGE_PATH = os.path.join(ORIGINAL_ADS_DIR_PATH, "menuButton.png")
+DONT_CLOSE_ADD_BUTTON_PATH = os.path.join(ORIGINAL_ADS_DIR_PATH, "dontCloseButton.png")
+
+FIRST_QUEST_IMAGE_PATH = os.path.join(ORIGINAL_QUESTS_DIR_PATH, "firstQuest.png")
+
 
 # list of close ad buttons as they may vary
 ORIGINAL_CLOSE_AD_IMAGES_DIR_PATH = os.path.join(IMAGES_DIR_PATH, "closebuttons")
@@ -18,77 +28,91 @@ ORIGINAL_CLOSE_AD_IMAGES_PATHS = [os.path.join(ORIGINAL_CLOSE_AD_IMAGES_DIR_PATH
 SCREENSHOT_DIR_PATH = os.path.join(IMAGES_DIR_PATH, "screenshots")
 SCREENSHOT_PATH_PREFIX = os.path.join(SCREENSHOT_DIR_PATH, "screenshot-")
 CROPPED_SCREENSHOT_PATH_PREFIX = os.path.join(SCREENSHOT_DIR_PATH, "cropped-")
-# --------
-# Vars
-# Open AD
-TV_LOCATION = {'x': 188, 'y': 277}
-TV_IMAGE_DIMENSIONS = {'left': 110, 'top': 180, 'right': 275, 'bottom': 360}
-# Close AD
-CLOSE_AD_LOCATION = {'x': 1013, 'y': 55}
-CLOSE_AD_DIMENSIONS = {'left': 980, 'top': 30, 'right': 1050, 'bottom': 100}
 
-MENU_BUTTON_IMAGE_DIMENSIONS = {'left': 65, 'top': 1725, 'right': 210, 'bottom': 1865}
+NAME_KEY = "name"
+DIMENSIONS_KEY = "dimensions"
+CLICK_LOCATION_KEY = "click_location"
+STATE_KEY = "state"
 
 
-# Quest persons
-DRUNKEN_GUY_QUEST_LOCATION = {'x': 536, 'y': 1530}
-DRUNKEN_GUY_QUEST_DIMENSIONS = {'left': 465, 'top': 946, 'right': 624, 'bottom': 1154}
+def new_location(x, y):
+    return {'x': x, 'y': y}
 
-PRINCE_CHARMING_QUEST_LOCATION = {'x': 264, 'y': 1122}
-PRINCE_CHARMING_QUEST_DIMENSIONS = {'left': 188, 'top': 1050, 'right': 355, 'bottom': 1175}
 
-PRINCES_DIANA_QUEST_LOCATION = {'x': 494, 'y': 974}
-PRINCES_DIANA_QUEST_DIMENSIONS = {'left': 406, 'top': 848, 'right': 570, 'bottom': 1010}
+def new_dimensions(left, top, right, bottom):
+    return {'left': left, 'top': top, 'right': right, 'bottom': bottom}
 
-ORC_QUEST_LOCATION = {'x': 505, 'y': 995}
-ORC_QUEST_DIMENSIONS = {'left': 420, 'top': 940, 'right': 610, 'bottom': 1040}
+def new_coords(dimensions, location):
+    return {
+        DIMENSIONS_KEY: dimensions,
+        CLICK_LOCATION_KEY: location
+    }
 
-CONAN_QUEST_LOCATION = {'x': 426, 'y': 935}
-CONAN_QUEST_DIMENSIONS = {'left': 338, 'top': 848, 'right': 565, 'bottom': 1000}
 
-ELF_QUEST_LOCATION = {'x': 426, 'y': 935}
-ELF_QUEST_DIMENSIONS = {'left': 338, 'top': 848, 'right': 565, 'bottom': 1000}
+def new_npc(name, dimensions, click_location):
+    return {
+        NAME_KEY: name,
+        DIMENSIONS_KEY: dimensions,
+        CLICK_LOCATION_KEY: click_location
+    }
 
-TAVERN_MASTER_LOCATION = {'x': 822, 'y': 815}
-TAVERN_MASTER_DIMENSIONS = {'left': 779, 'top': 764, 'right': 905, 'bottom': 870}
 
-DRINK_BEER_LOCATION = {'x': 624, 'y': 1462}
-DRINK_BEER_MUSHROOM_DIMENSIONS = {'left': 578, 'top': 1425, 'right': 672, 'bottom': 1515}
+def new_quest(dimensions, click_location):
+    return new_coords(dimensions, click_location)
+
+
+# ---------------------------
+#  ADS
+
+TV_LOCATION = new_location(188, 277)
+TV_IMAGE_DIMENSIONS = new_dimensions(110, 180, 275, 360)
+
+CLOSE_AD_LOCATION = new_location(1013, 55)
+CLOSE_AD_DIMENSIONS = new_dimensions(980, 30, 1050, 100)
+
+MENU_BUTTON_IMAGE_DIMENSIONS = new_dimensions(65, 1725, 210, 1865)
+# ---------------------------
+#  QUESTS
+
+TAVERN_MASTER = new_npc("tavern-master", new_dimensions(779, 764, 905, 870), new_location(822, 815))
+DRUNKEN_GUY = new_npc("drunken-guy", new_dimensions(465, 946, 624, 1154), new_location(536, 1530))
+PRINCE_CHARMING = new_npc("prince-charming", new_dimensions(188, 1050, 355, 1175), new_location(264, 1122))
+PRINCESS_DIANA = new_npc("princess-diana", new_dimensions(406, 848, 570, 1010), new_location(494, 974))
+ORC = new_npc("orc", new_dimensions(420, 940, 610, 1040), new_location(505, 995))
+CONAN = new_npc("conan", new_dimensions(338, 848, 565, 1000), new_location(426, 935))
+ELF = new_npc("elf", new_dimensions(338, 848, 565, 1000), new_location(426, 935))
+QUEST_NPC_LIST = [DRUNKEN_GUY, PRINCE_CHARMING, PRINCESS_DIANA, ORC, CONAN, ELF]
+
+DRINK_BEER_LOCATION = new_location(624, 1462)
+DRINK_BEER_MUSHROOM_DIMENSIONS = new_dimensions(578, 1425, 672, 1515)
 
 # NUMBERS
-GOLD_TEXT_DIMENSIONS = {'left': 136, 'top': 1243, 'right': 316, 'bottom': 1292}
-EXP_TEXT_DIMENSIONS = {'left': 136, 'top': 1316, 'right': 316, 'bottom': 1365}
-TIME_TEXT_DIMENSIONS = {'left': 136, 'top': 1395, 'right': 316, 'bottom': 1444}
+GOLD_TEXT_DIMENSIONS = new_dimensions(136, 1243, 316, 1292)
+EXP_TEXT_DIMENSIONS = new_dimensions(136, 1316, 316, 1365)
+TIME_TEXT_DIMENSIONS = new_dimensions(136, 1395, 316, 1444)
 
-FIRST_QUEST_LOCATION = {'x': 444, 'y': 448}
-FIRST_QUEST_DIMENSIONS = {'left': 349, 'top': 407, 'right': 533, 'bottom': 485}
+FIRST_QUEST = new_quest(new_dimensions(349, 407, 533, 485), new_location(444, 448))
+SECOND_QUEST = new_quest(new_dimensions(581, 407, 777, 485), new_location(680, 448))
+THIRD_QUEST = new_quest(new_dimensions(819, 407, 1010, 485), new_location(911, 448))
 
-SECOND_QUEST_LOCATION = {'x': 680, 'y': 448}
-SECOND_QUEST_DIMENSIONS = {'left': 581, 'top': 407, 'right': 777, 'bottom': 485}
-
-THIRD_QUEST_LOCATION = {'x': 911, 'y': 448}
-THIRD_QUEST_DIMENSIONS = {'left': 819, 'top': 407, 'right': 1010, 'bottom': 485}
-
-ACCEPT_QUEST_LOCATION = {'x': 533, 'y': 1450}
-
-SKIP_QUEST_AD_LOCATION = {'x': 900, 'y': 1444}
-SKIP_QUEST_AD_DIMENSIONS = {'left': 963, 'top': 1414, 'right': 1050, 'bottom': 480}
+ACCEPT_QUEST_LOCATION = new_location(533, 1450)
+SKIP_QUEST_AD = new_coords(new_dimensions(963, 1414, 1050, 480), new_location(900, 1444))
 
 # Quest tools
-QUEST_DONE_OK_BUTTON_LOCATION = {'x': 536, 'y': 1530}
-QUEST_DONE_OK_BUTTON_DIMENSIONS = {'left': 315, 'top': 1444, 'right': 760, 'bottom': 1603}
+QUEST_DONE_OK_BUTTON = new_coords(new_dimensions(315, 1444, 760, 1603), new_location(536, 1530))
 
 
 AD_SUFFIX = "ad"
 CLOSE_AD_SUFFIX = "close-ad"
+TIERS_SUFFIX = "tiers"
 MENU_BUTTON_SUFFIX = "menu-button"
 GOLD_NUM_SUFFIX = "gold-number"
 EXP_NUM_SUFFIX = "exp-number"
 TIME_NUM_SUFFIX = "time-number"
-# --------
-# Consts and glob
-STATE_KEY = "state"
-IMAGE_EXTENSION = ".png"
+NPC_SUFFIX = "npc"
+# Threshold for hist diff
 MENU_BUTTON_IMAGE_DIFF_THRESHOLD = 0.1
 TV_IMAGE_DIFF_THRESHOLD = 0.12
 CLOSE_AD_DIFF_THRESHOLD = 0.5
+QUEST_DIFF_THRESHOLD = 0.2
+NPC_THRESHOLD = 0.15
