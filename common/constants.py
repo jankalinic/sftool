@@ -15,15 +15,16 @@ ORIGINAL_QUESTS_DIR_PATH = os.path.join(ORIGINAL_DIR_PATH, "quests")
 ORIGINAL_TV_IMAGE_PATH = os.path.join(ORIGINAL_TAVERN_DIR_PATH, "colorTV.png")
 ORIGINAL_MENU_BUTTON_IMAGE_PATH = os.path.join(ORIGINAL_TAVERN_DIR_PATH, "menuButton.png")
 ORIGINAL_MENU_BUTTON_NOTIFICATION_IMAGE_PATH = os.path.join(ORIGINAL_TAVERN_DIR_PATH, "menuButtonNotification.png")
-DONT_CLOSE_ADD_BUTTON_PATH = os.path.join(ORIGINAL_TAVERN_DIR_PATH, "dontCloseButton.png")
+ORIGINAL_DONT_CLOSE_ADD_BUTTON_IMAGE_PATH = os.path.join(ORIGINAL_TAVERN_DIR_PATH, "dontCloseButton.png")
+ORIGINAL_BEER_BUTTON_IMAGE_PATH = os.path.join(ORIGINAL_TAVERN_DIR_PATH, "beerMushroomButton.png")
+
 FIRST_QUEST_IMAGE_PATH = os.path.join(ORIGINAL_QUESTS_DIR_PATH, "firstQuest.png")
 SECOND_QUEST_IMAGE_PATH = os.path.join(ORIGINAL_QUESTS_DIR_PATH, "secondQuest.png")
 THIRD_QUEST_IMAGE_PATH = os.path.join(ORIGINAL_QUESTS_DIR_PATH, "thirdQuest.png")
 ACCEPT_QUEST_BUTTON_IMAGE_PATH = os.path.join(ORIGINAL_QUESTS_DIR_PATH, "acceptQuestButton.png")
 
 TAVERN_MASTER_IMAGE_PATH = os.path.join(ORIGINAL_TAVERN_DIR_PATH, "tavernMaster.png")
-
-DRUNKEN_GUY_IMAGE_PATH = os.path.join(ORIGINAL_TAVERN_DIR_PATH, "tavernMaster.png")
+DRUNKEN_GUY_IMAGE_PATH = os.path.join(ORIGINAL_TAVERN_DIR_PATH, "drunkenGuy.png")
 PRINCE_CHARMING_IMAGE_PATH = os.path.join(ORIGINAL_TAVERN_DIR_PATH, "princeCharming.png")
 PRINCESS_DIANA_IMAGE_PATH = os.path.join(ORIGINAL_TAVERN_DIR_PATH, "princesDiana.png")
 ORC_IMAGE_PATH = os.path.join(ORIGINAL_TAVERN_DIR_PATH, "orc.png")
@@ -106,7 +107,7 @@ CLOSE_AD_DIMENSIONS = new_dimensions(980, 30, 1050, 100)
 MENU_BUTTON_IMAGE_DIMENSIONS = new_dimensions(65, 1725, 210, 1865)
 # ---------------------------
 #  QUESTS
-TAVERN_MASTER = new_npc("tavern-master", new_dimensions(779, 764, 879, 864), new_location(822, 815))
+TAVERN_MASTER = new_npc("tavern-master", TAVERN_MASTER_IMAGE_PATH, new_dimensions(779, 764, 879, 864), new_location(822, 815))
 # ------
 DRUNKEN_GUY = new_npc("drunken-guy", DRUNKEN_GUY_IMAGE_PATH, new_dimensions(465, 946, 624, 1154), new_location(536, 1530))
 PRINCE_CHARMING = new_npc("prince-charming", PRINCE_CHARMING_IMAGE_PATH,new_dimensions(188, 1050, 355, 1175), new_location(264, 1122))
@@ -117,7 +118,7 @@ ELF = new_npc("elf", ELF_IMAGE_PATH, new_dimensions(338, 848, 565, 1000), new_lo
 # -------
 QUEST_NPC_LIST = [DRUNKEN_GUY, PRINCE_CHARMING, PRINCESS_DIANA, ORC, CONAN, ELF]
 # ------
-DRINK_BEER_BUTTON = new_coords(new_dimensions(578, 1425, 672, 1515), new_location(624, 1462))
+DRINK_BEER_MUSHROOM_BUTTON = new_button("mushroom-button", ORIGINAL_BEER_BUTTON_IMAGE_PATH,new_dimensions(578, 1425, 672, 1515), new_location(624, 1462))
 # ------
 GOLD_TEXT_DIMENSIONS = new_dimensions(136, 1243, 316, 1292)
 EXP_TEXT_DIMENSIONS = new_dimensions(136, 1316, 316, 1365)

@@ -73,7 +73,7 @@ def take_screenshot(emulator_device):
 
 
 def crop_screenshot(emulator_device, dimensions, suffix):
-    logger.debug(f"[{emulator_device.serial}] Cropping a screenshot")
+    logger.debug(f"[{emulator_device.serial}] Cropping a screenshot {suffix}")
     start_time = time.time()
 
     # Image.open(get_screenshot_path(emulator_device)).crop(to_box(dimensions)).save(get_cropped_screenshot_path(emulator_device))
@@ -130,10 +130,11 @@ def enhance_image_contrast(image_path):
     image = Image.open(image_path)
     im_output = ImageEnhance.Contrast(image).enhance(3)
     im_output.save(get_contrasted_image_path(image_path))
-    print(f"Execution of contrast enhancing: {time.time() - start_time:.6f} seconds")
+    logger.debug(f"Execution of contrast enhancing: {time.time() - start_time:.6f} seconds")
 
 
 def get_number_from_image(image_path):
+
     enhance_image_contrast(image_path)
     image = Image.open(get_contrasted_image_path(image_path))
     text = pytesseract.image_to_string(image, config='--psm 6')
@@ -149,3 +150,20 @@ def get_number_from_image(image_path):
     else:
         return int(''.join(filter(str.isdigit, text)))
 
+
+def go_to_tavern_using_key(emulator_device):
+    logger.debug(f"[{emulator_device.serial}]: Pressing 't' to return to tavern")
+
+    # first leave the tavern to exit without clicking on close and then go back using t
+    adm_command = f"adb -s {emulator_device.serial} shell input text 'a'"
+    subprocess.run(adm_command, shell=True, check=True)
+
+    adm_command = f"adb -s {emulator_device.serial} shell input text 't'"
+    subprocess.run(adm_command, shell=True, check=True)
+
+    take_screenshot(emulator_device)
+    crop_menu_button(emulator_device)
+
+    if not is_in_tavern(emulator_device):
+        logger.debug(f"[{emulator_device.serial}]: Pressing 't' did not work")
+        go_to_tavern_using_key(emulator_device)

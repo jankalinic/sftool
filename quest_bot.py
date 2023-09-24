@@ -8,6 +8,10 @@ from common import constants as const
 CAN_USE_MUSHROOMS_FOR_BEER = bool
 
 
+def crop_accept_button(emulator_device):
+    util.crop_screenshot(emulator_device, const.ACCEPT_QUEST_BUTTON[const.DIMENSIONS_KEY], const.ACCEPT_QUEST_BUTTON[const.NAME_KEY])
+
+
 def crop_gold(emulator_device):
     util.crop_screenshot(emulator_device, const.GOLD_TEXT_DIMENSIONS, const.GOLD_NUM_SUFFIX)
 
@@ -26,6 +30,12 @@ def crop_quest_numbers(emulator_device):
     crop_time(emulator_device)
 
 
+def crop_beer_mushroom_button(emulator_device):
+    util.crop_screenshot(emulator_device,
+                         const.DRINK_BEER_MUSHROOM_BUTTON[const.DIMENSIONS_KEY],
+                         const.DRINK_BEER_MUSHROOM_BUTTON[const.NAME_KEY])
+
+
 def is_enough_thirst(emulator_device):
     return not util.are_images_similar(emulator_device,
                                        const.TAVERN_MASTER[const.PATH_KEY],
@@ -34,12 +44,23 @@ def is_enough_thirst(emulator_device):
 
 
 def can_drink_more(emulator_device):
-    if True and CAN_USE_MUSHROOMS_FOR_BEER:
-        return True
+    if CAN_USE_MUSHROOMS_FOR_BEER:
+
+        util.take_screenshot(emulator_device)
+        crop_beer_mushroom_button(emulator_device)
+
+        if util.are_images_similar(emulator_device,
+                                   const.DRINK_BEER_MUSHROOM_BUTTON[const.PATH_KEY],
+                                   util.get_cropped_screenshot_path(emulator_device, const.DRINK_BEER_MUSHROOM_BUTTON[const.NAME_KEY]),
+                                   const.MENU_BUTTON_IMAGE_DIFF_THRESHOLD):
+            return True
+
+    return False
 
 
 def drink_beer(emulator_device):
-    emulator_device.click(const.DRINK_BEER_BUTTON[const.CLICK_LOCATION_KEY])
+    logger.debug(f"[{emulator_device.serial}]: Drink beer")
+    emulator_device.click(const.DRINK_BEER_MUSHROOM_BUTTON[const.CLICK_LOCATION_KEY][const.X_KEY], const.DRINK_BEER_MUSHROOM_BUTTON[const.CLICK_LOCATION_KEY][const.Y_KEY])
 
 
 def click_ok_quest_done(emulator_device):
@@ -59,7 +80,15 @@ def open_quest_from_npc(emulator_device):
 
 
 def crop_first_quest(emulator_device):
-    util.crop_screenshot(emulator_device, const.FIRST_QUEST[const.DIMENSIONS_KEY], const.FIRST_QUEST_SUFFIX)
+    util.crop_screenshot(emulator_device, const.FIRST_QUEST[const.DIMENSIONS_KEY], const.FIRST_QUEST[const.NAME_KEY])
+
+
+def crop_second_quest(emulator_device):
+    util.crop_screenshot(emulator_device, const.SECOND_QUEST[const.DIMENSIONS_KEY], const.SECOND_QUEST[const.NAME_KEY])
+
+
+def crop_third_quest(emulator_device):
+    util.crop_screenshot(emulator_device, const.THIRD_QUEST[const.DIMENSIONS_KEY], const.THIRD_QUEST[const.NAME_KEY])
 
 
 def crop_tavern_master(emulator_device):
@@ -112,8 +141,13 @@ def select_best_quest(emulator_device):
     start_quest(emulator_device, pick_quest_num)
 
 
+def drink_beer_and_return_to_tavern(emulator_device):
+    drink_beer(emulator_device)
+    util.go_to_tavern_using_key(emulator_device)
+
+
 def quest_loop(emulator):
-    logger.info(f"Running quest loop for: {emulator}")
+    logger.info(f"Running quest loop for: {emulator.serial}")
     while True:
         if util.is_emulator_attached(emulator):
 
@@ -128,7 +162,7 @@ def quest_loop(emulator):
                     open_quest_from_npc(emulator)
 
                     util.take_screenshot(emulator)
-                    crop_first_quest(emulator)
+                    crop_accept_button(emulator)
 
                     if is_in_quest_selection(emulator):
                         # decide which to pick
@@ -137,8 +171,10 @@ def quest_loop(emulator):
                         util.take_screenshot(emulator)
                         # crop_first_quest(emulator)
                 else:
+                    logger.debug(f"[{emulator.serial}]: Need to drink beer.")
+                    emulator.click(const.TAVERN_MASTER[const.CLICK_LOCATION_KEY][const.X_KEY], const.TAVERN_MASTER[const.CLICK_LOCATION_KEY][const.Y_KEY])
                     if can_drink_more(emulator):
-                        drink_beer(emulator)
+                        drink_beer_and_return_to_tavern(emulator)
                     else:
                         logger.error(f"[{emulator.serial}]: cannot do more quest. Terminating bot.")
                         break
@@ -150,7 +186,7 @@ def quest_loop(emulator):
 
 
 if __name__ == '__main__':
-    CAN_USE_MUSHROOMS_FOR_BEER = False
+    CAN_USE_MUSHROOMS_FOR_BEER = True
 
     logger.setLevel(DEBUG_LEVEL)
     logger.info("Started Shakes_Quest_Bot")

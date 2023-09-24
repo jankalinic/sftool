@@ -41,8 +41,8 @@ def get_number_from_image(image_path):
 
 
 if __name__ == '__main__':
-    IMAGE_PATH = os.path.join(const.SFTOOL_DIR_PATH, "examples", "images", "crop_time_image_with_number.png")
-
+    IMAGE_PATH = os.path.join(const.SFTOOL_DIR_PATH, "examples", "images", "crop_gold_image_with_number.png")
+    # IMAGE_PATH = '/Users/jkalinic-mac/sftool/common/../images/screenshots/cropped-emulator-5556-gold-number_contrasted.png'
     # whole => x:136 y:1243 - x:313 y:1465 = 180x222 left:130 top:1243
     # gold => y = 1243 - 1292 = 180x49 ==== 180x49+136+1243
     # exp => y= 1316 - 1386 = 180x49 ==== 180x49+136+1316
