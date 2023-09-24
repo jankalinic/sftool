@@ -1,8 +1,8 @@
 import os
 
 # PATHS
-SFTOOL_DIR_PATH = os.path.dirname(__file__)
-IMAGES_DIR_PATH = os.path.join(SFTOOL_DIR_PATH, "../images")
+SFTOOL_DIR_PATH = os.path.join(os.path.dirname(__file__), "../")
+IMAGES_DIR_PATH = os.path.join(SFTOOL_DIR_PATH, "images")
 ORIGINAL_DIR_PATH = os.path.join(IMAGES_DIR_PATH, "original")
 # original constant images - readonly files
 ORIGINAL_TV_IMAGE_PATH = os.path.join(ORIGINAL_DIR_PATH, "colorTV.png")
@@ -28,6 +28,10 @@ CLOSE_AD_LOCATION = {'x': 1013, 'y': 55}
 CLOSE_AD_DIMENSIONS = {'left': 980, 'top': 30, 'right': 1050, 'bottom': 100}
 
 MENU_BUTTON_IMAGE_DIMENSIONS = {'left': 65, 'top': 1725, 'right': 210, 'bottom': 1865}
+
+AD_SUFFIX = "ad"
+CLOSE_AD_SUFFIX = "close-ad"
+MENU_BUTTON_SUFFIX = "menu-button"
 # --------
 # Consts and glob
 SERIAL_KEY = "serialno"
