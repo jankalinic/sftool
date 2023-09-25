@@ -9,11 +9,13 @@ ORIGINAL_DIR_PATH = os.path.join(IMAGES_DIR_PATH, "original")
 # ------
 ORIGINAL_NPC_DIR_PATH = os.path.join(ORIGINAL_DIR_PATH, "npc")
 ORIGINAL_ADS_DIR_PATH = os.path.join(ORIGINAL_DIR_PATH, "ads")
-ORIGINAL_TAVERN_DIR_PATH = os.path.join(ORIGINAL_DIR_PATH, "tavern")
+ORIGINAL_ADS_CLOSE_BUTTONS_DIR_PATH = os.path.join(ORIGINAL_ADS_DIR_PATH, "closebuttons")
 ORIGINAL_QUESTS_DIR_PATH = os.path.join(ORIGINAL_DIR_PATH, "quests")
 ORIGINAL_BUTTON_DIR_PATH = os.path.join(ORIGINAL_DIR_PATH, "buttons")
 # ------
 SCREENSHOT_DIR_PATH = os.path.join(IMAGES_DIR_PATH, "screenshots")
+LIST_OF_CLOSEBUTTONS = [file for file in os.listdir(ORIGINAL_ADS_CLOSE_BUTTONS_DIR_PATH) if file.endswith(".png")]
+
 # ------
 OFFLINE = "offline"
 NPC_SUFFIX = "npc"
@@ -25,7 +27,8 @@ MENU_BUTTON_IMAGE_DIFF_THRESHOLD = 0.1
 TV_IMAGE_DIFF_THRESHOLD = 0.12
 CLOSE_AD_DIFF_THRESHOLD = 0.5
 QUEST_DIFF_THRESHOLD = 0.01
-NPC_THRESHOLD = 0.01
+QUEST_TIERS_DIFF_THRESHOLD = 0.02
+NPC_THRESHOLD = 0.05
 # ------ DICT KEYS
 NAME_KEY = "name"
 DIMENSIONS_KEY = "dimensions"
@@ -99,9 +102,9 @@ FIDGET = new_npc("fidget", new_dimensions(560, 945, 746, 1044), new_location(642
 # ------
 QUEST_NPC_LIST = [DRUNKEN_GUY, PRINCE_CHARMING, PRINCESS_DIANA, ORC, CONAN, ELF, WIZARD, KK_MEMBER, MAP_GUY, FIDGET]
 # ------ 200x57
-GOLD_DATA = new_quest_data("gold-number", new_dimensions(130, 1240, 330, 1297))
-EXP_DATA = new_quest_data("exp-number", new_dimensions(130, 1313, 330, 1370))
-TIME_DATA = new_quest_data("time-number", new_dimensions(130, 1390, 330, 1447))
+GOLD_DATA = new_quest_data("gold-number", new_dimensions(133, 1238, 330, 1297))
+EXP_DATA = new_quest_data("exp-number", new_dimensions(133, 1313, 330, 1370))
+TIME_DATA = new_quest_data("time-number", new_dimensions(133, 1390, 330, 1447))
 # ------
 QUEST_AD = new_quest("quest-ad", new_dimensions(767, 1420, 1048, 1494), new_location(888, 1444))
 QUEST_AD_WO_HOURGLASS = new_quest("quest-ad-without-hourglass", new_dimensions(591, 1388, 967, 1487), new_location(764, 1419))

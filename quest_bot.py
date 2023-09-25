@@ -9,16 +9,17 @@ CAN_USE_MUSHROOMS_FOR_BEER = bool
 
 
 def start_quest(emulator_device, quest_num):
+    logger.info(f"[{emulator_device.serial}]: Starting quest [{quest_num}]")
     quest_click_location = const.QUEST_LIST[quest_num][const.CLICK_LOCATION_KEY]
     emulator_device.click(quest_click_location[const.X_KEY], quest_click_location[const.Y_KEY])
     # check if correct quest is selected
     if util.is_selected_correct_quest(emulator_device, quest_num):
         start_quest_location = const.ACCEPT_QUEST_BUTTON[const.CLICK_LOCATION_KEY]
         emulator_device.click(start_quest_location[const.X_KEY], start_quest_location[const.Y_KEY])
-        time.sleep(0.5)
+        time.sleep(5)
     else:
         if util.is_in_quest_selection(emulator_device):
-            logger.debug("Try again")
+            logger.info(f"[{emulator_device.serial}]: Failed to start the quest -> try again")
             start_quest(emulator_device, quest_num)
         else:
             # maybe is back in tavern
@@ -53,8 +54,6 @@ def select_best_quest(emulator_device):
         logger.debug(f"[{emulator_device.serial}]: Current time: {time_seconds}")
         time_list.append(time_seconds)
 
-        time.sleep(0.1)
-
     # TODO: Jirka logic to pick which quest is the best
     pick_quest_num = exp_list.index(max(exp_list))
 
@@ -78,18 +77,22 @@ def quest_loop(emulator):
 
             util.take_screenshot(emulator)
 
-            # there is need for a better check for being in tavern -> this casues error while fighting
             if util.is_in_tavern(emulator):
+                logger.info(f"[{emulator.serial}]: is in tavern")
                 if util.is_enough_thirst(emulator):
                     util.open_quest_from_npc(emulator)
+
                     util.take_screenshot(emulator)
+
                     if util.is_in_quest_selection(emulator):
-                        # decide which to pick
+                        logger.info(f"[{emulator.serial}]: picking quest")
                         select_best_quest(emulator)
                 else:
-                    logger.debug(f"[{emulator.serial}]: Need to drink beer.")
+                    logger.info(f"[{emulator.serial}]: Need to drink beer.")
                     open_tavern_master_menu(emulator)
+
                     util.take_screenshot(emulator)
+
                     if util.can_drink_more(emulator, CAN_USE_MUSHROOMS_FOR_BEER):
                         util.drink_beer_and_return_to_tavern(emulator)
                     else:
@@ -97,30 +100,31 @@ def quest_loop(emulator):
                         break
             else:
                 if util.is_in_quest(emulator):
+                    logger.info(f"[{emulator.serial}]: is in quest")
                     if util.is_quest_skipable_with_ad(emulator):
+                        logger.info(f"[{emulator.serial}]: quest can be skipped with ad")
                         util.skip_quest_with_ad(emulator)
                     else:
                         if util.is_quest_done(emulator):
+                            logger.info(f"[{emulator.serial}]: quest is done")
                             exit_done_quest(emulator)
                         else:
-                            logger.debug(f"[{emulator.serial}]: is still in quest, that cannot be skipped, lets wait 30s")
+                            logger.info(f"[{emulator.serial}]: is still in quest, lets wait 30s")
                             time.sleep(30)
                             continue
                 else:
-                    if util.is_close_ad_present(emulator):
-                        logger.debug(f"[{emulator.serial}]: is in AD")
-                        util.close_ad_if_playing(emulator)
+                    util.close_ad_if_playing(emulator)
+                    if util.is_quest_done(emulator):
+                        exit_done_quest(emulator)
                     else:
-                        if util.is_quest_done(emulator):
-                            exit_done_quest(emulator)
+                        if util.is_in_quest_selection(emulator):
+                            logger.info(f"[{emulator.serial}]: is in tavern and chosing quest")
+                            # util.go_back_using_key(emulator)
+                            util.go_to_tavern_using_key(emulator)
                         else:
-                            if util.is_in_quest_selection(emulator):
-                                logger.debug(f"[{emulator.serial}]: is in tavern and chosing quest")
-                                # util.go_back_using_key(emulator)
-                                util.go_to_tavern_using_key(emulator)
-                            else:
-                                logger.debug(f"[{emulator.serial}]: is not in tavern might still be in ad, wait for a 2 seconds")
-                                time.sleep(2)
+                            logger.info(f"[{emulator.serial}]: is not in tavern might still be in ad, wait for a 2 seconds")
+                            time.sleep(2)
+
         else:
             logger.error(f"[{emulator.serial}]: is offline")
             break
