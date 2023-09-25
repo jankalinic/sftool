@@ -1,1 +1,3 @@
 images/screenshots/*.png
+*/__pycache__/*
+.idea/

@@ -35,16 +35,25 @@ def select_best_quest(emulator_device):
     for quest in const.QUEST_LIST:
         location = quest[const.CLICK_LOCATION_KEY]
         emulator_device.click(location[const.X_KEY], location[const.Y_KEY])
+
         time.sleep(1)
+
         util.take_screenshot(emulator_device)
         util.crop_quest_numbers(emulator_device)
 
-        gold_list.append(util.get_number_from_image(util.get_cropped_screenshot_path(emulator_device, const.GOLD_NUM_SUFFIX)))
-        exp_list.append(util.get_number_from_image(util.get_cropped_screenshot_path(emulator_device, const.EXP_NUM_SUFFIX)))
-        time_list.append(util.get_number_from_image(util.get_cropped_screenshot_path(emulator_device, const.TIME_NUM_SUFFIX)))
+        gold = util.get_number_from_image(util.get_cropped_screenshot_path(emulator_device, const.GOLD_DATA[const.NAME_KEY]))
+        logger.debug(f"[{emulator_device.serial}]: Current gold: {gold}")
+        gold_list.append(gold)
+
+        exp = util.get_number_from_image(util.get_cropped_screenshot_path(emulator_device, const.EXP_DATA[const.NAME_KEY]))
+        logger.debug(f"[{emulator_device.serial}]: Current exp: {exp}")
+        exp_list.append(exp)
+
+        time_seconds = util.get_number_from_image(util.get_cropped_screenshot_path(emulator_device, const.TIME_DATA[const.NAME_KEY]))
+        logger.debug(f"[{emulator_device.serial}]: Current time: {time_seconds}")
+        time_list.append(time_seconds)
 
         time.sleep(0.1)
-
 
     # TODO: Jirka logic to pick which quest is the best
     pick_quest_num = exp_list.index(max(exp_list))
@@ -105,7 +114,13 @@ def quest_loop(emulator):
                         if util.is_quest_done(emulator):
                             exit_done_quest(emulator)
                         else:
-                            logger.debug(f"[{emulator.serial}]: is not in tavern")
+                            if util.is_in_quest_selection(emulator):
+                                logger.debug(f"[{emulator.serial}]: is in tavern and chosing quest")
+                                # util.go_back_using_key(emulator)
+                                util.go_to_tavern_using_key(emulator)
+                            else:
+                                logger.debug(f"[{emulator.serial}]: is not in tavern might still be in ad, wait for a 2 seconds")
+                                time.sleep(2)
         else:
             logger.error(f"[{emulator.serial}]: is offline")
             break

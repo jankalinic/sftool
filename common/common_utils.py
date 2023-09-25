@@ -53,15 +53,22 @@ def to_box(dimensions):
 
 
 def get_screenshot_path(emulator_device):
-    return const.SCREENSHOT_PATH_PREFIX + emulator_device.serial + const.IMAGE_EXTENSION
+    return os.path.join(const.SCREENSHOT_DIR_PATH, emulator_device.serial, (const.SCREENSHOT_SUFFIX + const.IMAGE_EXTENSION))
 
 
 def get_cropped_screenshot_path(emulator_device, suffix=""):
-    suffix = "-" + suffix if suffix != "" else ""
-    return const.CROPPED_SCREENSHOT_PATH_PREFIX + emulator_device.serial + suffix + const.IMAGE_EXTENSION
+    suffix = const.CROPPED_SUFFIX if suffix == "" else suffix
+    return os.path.join(const.SCREENSHOT_DIR_PATH, emulator_device.serial, const.CROPPED_SUFFIX, (suffix + const.IMAGE_EXTENSION))
+
+
+def check_if_path_exist_or_create(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
 
 
 def take_screenshot(emulator_device):
+    check_if_path_exist_or_create(os.path.dirname(get_screenshot_path(emulator_device)))
+
     logger.info(f"[{emulator_device.serial}] Taking a screenshot")
 
     start_time = time.time()
@@ -70,9 +77,12 @@ def take_screenshot(emulator_device):
     subprocess.run(adb_command, shell=True, check=True)
 
     logger.debug(f"[{emulator_device.serial}] Execution of sceenshot took: {time.time() - start_time:.6f} seconds")
+    time.sleep(0.1)
 
 
 def crop_screenshot(emulator_device, dimensions, suffix):
+    check_if_path_exist_or_create(os.path.dirname(get_cropped_screenshot_path(emulator_device, suffix)))
+
     logger.debug(f"[{emulator_device.serial}] Cropping a screenshot {suffix}")
     start_time = time.time()
 
@@ -81,6 +91,7 @@ def crop_screenshot(emulator_device, dimensions, suffix):
     subprocess.run(crop_cmd, shell=True, check=True)
 
     logger.debug(f"[{emulator_device.serial}] Execution of cropping took: {time.time() - start_time:.6f} seconds")
+    time.sleep(1)
 
 
 def are_images_similar(emulator_device, first_image, second_image, threshold):
@@ -93,10 +104,6 @@ def are_images_similar(emulator_device, first_image, second_image, threshold):
     logger.debug(f"[{emulator_device.serial}]: Execution of comparing took: {time.time() - start_time:.6f} seconds")
 
     return image_difference < threshold
-
-
-def crop_menu_button(emulator_device):
-    crop_screenshot(emulator_device, const.MENU_BUTTON_IMAGE_DIMENSIONS, const.MENU_BUTTON_SUFFIX)
 
 
 def crop_beer_button(emulator_device):
@@ -112,10 +119,8 @@ def is_in_quest(emulator_device):
 
 
 def is_in_tavern(emulator_device):
-    logger.debug(f"[{emulator_device.serial}]: Looking for menu button")
-
-
-    # pivo + neni v questu + neni v selectu
+    logger.debug(f"[{emulator_device.serial}]: Check if in tavern")
+    # Screen must contain beer + not acceptQuest + not questworm
     crop_beer_button(emulator_device)
 
     return are_images_similar(emulator_device,
@@ -134,20 +139,37 @@ def get_contrasted_image_path(image_path):
     return image_path.split(const.IMAGE_EXTENSION)[0] + "_contrasted" + const.IMAGE_EXTENSION
 
 
+def make_image_black_and_white(image_path):
+    start_time = time.time()
+
+    image = Image.open(image_path)
+    contrast = ImageEnhance.Contrast(image).enhance(10)
+    output_image = contrast.convert('L')
+    output_image.save(get_contrasted_image_path(image_path))
+
+    logger.debug(f"Execution of black and white enhancing: {time.time() - start_time:.6f} seconds")
+    time.sleep(1)
+
+
 def enhance_image_contrast(image_path):
     start_time = time.time()
+
     image = Image.open(image_path)
-    im_output = ImageEnhance.Contrast(image).enhance(3)
-    im_output.save(get_contrasted_image_path(image_path))
+    contrast = ImageEnhance.Contrast(image).enhance(3)
+    contrast.save(get_contrasted_image_path(image_path))
+
     logger.debug(f"Execution of contrast enhancing: {time.time() - start_time:.6f} seconds")
+    time.sleep(1)
 
 
-def get_number_from_image(image_path):
+def get_text_from_image(image_path, config=6):
+    return pytesseract.image_to_string(Image.open(image_path), config=f'--psm {config}').replace("\n", "")
 
-    # enhance_image_contrast(image_path)
-    image = Image.open(image_path)
-    text = pytesseract.image_to_string(image, config='--psm 6')
-    text = text.replace("\n", "")
+
+def get_number_from_image(image_path, config=6):
+
+    enhance_image_contrast(image_path)
+    text = get_text_from_image(get_contrasted_image_path(image_path), config)
 
     if "," in text:
         numeric_text = text.replace(",", ".")
@@ -162,10 +184,9 @@ def get_number_from_image(image_path):
 
     elif text == "":
         logger.debug("empty-text to number")
+        return get_number_from_image(image_path, config=3)
     else:
         return int(''.join(filter(str.isdigit, text)))
-
-
 
 
 def is_in_quest_selection(emulator_device):
@@ -189,38 +210,50 @@ def go_to_tavern_using_key(emulator_device):
     time.sleep(1)
 
     take_screenshot(emulator_device)
-    crop_menu_button(emulator_device)
 
     if is_in_tavern(emulator_device):
         logger.debug(f"[{emulator_device.serial}]: Pressing 't' did not work")
         go_to_tavern_using_key(emulator_device)
 
 
+def go_back_using_key(emulator_device):
+    logger.debug(f"[{emulator_device.serial}]: Pressing 'x' to return to tavern")
+    adm_command = f"adb -s {emulator_device.serial} shell input text 'x'"
+    subprocess.run(adm_command, shell=True, check=True)
+    time.sleep(1)
+
+
 def crop_close_ad(emulator_device):
-    crop_screenshot(emulator_device, const.CLOSE_AD_DIMENSIONS, const.CLOSE_AD_SUFFIX)
+    crop_screenshot(emulator_device, const.CLOSE_AD_BUTTON[const.DIMENSIONS_KEY], const.CLOSE_AD_BUTTON[const.NAME_KEY])
 
 
 def is_close_ad_present(emulator_device):
     crop_close_ad(emulator_device)
     logger.debug(f"[{emulator_device.serial}]: Looking for AD close button")
 
-    for image in const.ORIGINAL_CLOSE_AD_IMAGES_PATHS:
-        if are_images_similar(emulator_device,
-                                   get_cropped_screenshot_path(emulator_device, const.CLOSE_AD_SUFFIX),
-                                   image,
-                                   const.CLOSE_AD_DIFF_THRESHOLD):
-            # This is redundant check to make sure it's not the main exit button
-            if not are_images_similar(emulator_device,
-                                        get_cropped_screenshot_path(emulator_device, const.CLOSE_AD_SUFFIX),
-                                        const.ORIGINAL_DONT_CLOSE_ADD_BUTTON_IMAGE_PATH,
-                                        const.CLOSE_AD_DIFF_THRESHOLD):
-                return True
+    if are_images_similar(emulator_device,
+                              get_cropped_screenshot_path(emulator_device, const.CLOSE_AD_BUTTON[const.NAME_KEY]),
+                              const.DONT_CLOSE_AD_BUTTON[const.PATH_KEY],
+                              const.CLOSE_AD_DIFF_THRESHOLD):
+        logger.debug(f"[{emulator_device.serial}]: there is only do NOT close button")
+        return False
+
+    make_image_black_and_white(get_cropped_screenshot_path(emulator_device, const.CLOSE_AD_BUTTON[const.NAME_KEY]))
+
+    text = get_text_from_image(get_contrasted_image_path(get_cropped_screenshot_path(emulator_device, const.CLOSE_AD_BUTTON[const.NAME_KEY])), config=8)
+
+    if "x" in text:
+        logger.debug(f"[{emulator_device.serial}]: X is in the corner")
+        return True
+
+    logger.debug(f"[{emulator_device.serial}]:  X is not the corner")
     return False
 
 
 def click_exit_ad(emulator_device):
     logger.debug(f"[{emulator_device.serial}]: exiting AD")
-    emulator_device.click(const.CLOSE_AD_LOCATION[const.X_KEY], const.CLOSE_AD_LOCATION[const.Y_KEY])
+    exit_ad_location = const.CLOSE_AD_BUTTON[const.CLICK_LOCATION_KEY]
+    emulator_device.click(exit_ad_location[const.X_KEY], exit_ad_location[const.Y_KEY])
 
 
 def close_ad_if_playing(emulator_device):
@@ -235,10 +268,8 @@ def close_ad_if_playing(emulator_device):
         close_ad_if_playing(emulator_device)
     else:
         logger.debug(f"[{emulator_device.serial}]: ad is not playing")
-        crop_menu_button(emulator_device)
         if is_in_tavern(emulator_device):
             logger.debug(f"[{emulator_device.serial}]: is in tavern")
-
 
 
 def crop_quest_progress_bar(emulator_device):
@@ -269,9 +300,10 @@ def is_quest_skipable_with_ad(emulator_device):
 
 
 def skip_quest_with_ad(emulator_device):
+    logger.error(f"[{emulator_device.serial}]: Skipping quest using Ad.")
     ad_location = const.QUEST_AD[const.CLICK_LOCATION_KEY]
     emulator_device.click(ad_location[const.X_KEY], ad_location[const.Y_KEY])
-    time.sleep(1)
+    time.sleep(5)
     close_ad_if_playing(emulator_device)
 
 
@@ -287,22 +319,20 @@ def is_quest_done(emulator_device):
                                    const.MENU_BUTTON_IMAGE_DIFF_THRESHOLD)
 
 
-
-
 def crop_accept_button(emulator_device):
     crop_screenshot(emulator_device, const.ACCEPT_QUEST_BUTTON[const.DIMENSIONS_KEY], const.ACCEPT_QUEST_BUTTON[const.NAME_KEY])
 
 
 def crop_gold(emulator_device):
-    crop_screenshot(emulator_device, const.GOLD_TEXT_DIMENSIONS, const.GOLD_NUM_SUFFIX)
+    crop_screenshot(emulator_device, const.GOLD_DATA[const.DIMENSIONS_KEY], const.GOLD_DATA[const.NAME_KEY])
 
 
 def crop_exp(emulator_device):
-    crop_screenshot(emulator_device, const.EXP_TEXT_DIMENSIONS, const.EXP_NUM_SUFFIX)
+    crop_screenshot(emulator_device, const.EXP_DATA[const.DIMENSIONS_KEY], const.EXP_DATA[const.NAME_KEY])
 
 
 def crop_time(emulator_device):
-    crop_screenshot(emulator_device, const.TIME_TEXT_DIMENSIONS, const.TIME_NUM_SUFFIX)
+    crop_screenshot(emulator_device, const.TIME_DATA[const.DIMENSIONS_KEY], const.TIME_DATA[const.NAME_KEY])
 
 
 def crop_quest_numbers(emulator_device):
@@ -320,9 +350,9 @@ def crop_beer_mushroom_button(emulator_device):
 def is_enough_thirst(emulator_device):
     crop_tavern_master(emulator_device)
     return not are_images_similar(emulator_device,
-                                       const.TAVERN_MASTER[const.PATH_KEY],
-                                       get_cropped_screenshot_path(emulator_device, const.NPC_SUFFIX),
-                                       const.NPC_THRESHOLD)
+                                   const.TAVERN_MASTER[const.PATH_KEY],
+                                   get_cropped_screenshot_path(emulator_device, const.TAVERN_MASTER[const.NAME_KEY]),
+                                   const.NPC_THRESHOLD)
 
 
 def can_drink_more(emulator_device, can_use_mushrooms):
@@ -373,7 +403,7 @@ def crop_third_quest(emulator_device):
 
 
 def crop_tavern_master(emulator_device):
-    crop_screenshot(emulator_device, const.TAVERN_MASTER[const.DIMENSIONS_KEY], const.NPC_SUFFIX)
+    crop_screenshot(emulator_device, const.TAVERN_MASTER[const.DIMENSIONS_KEY], const.TAVERN_MASTER[const.NAME_KEY])
 
 
 def is_selected_correct_quest(emulator_device, quest_num):
@@ -386,11 +416,10 @@ def is_selected_correct_quest(emulator_device, quest_num):
                                    const.QUEST_DIFF_THRESHOLD)
 
 
-
 def clean_directory(directory_path):
     try:
         # List all files and subdirectories in the directory
-        items = os.listdir(directory_path)
+        items = [item for item in os.listdir(directory_path) if item.endswith(".png")]
 
         # Loop through each item in the directory
         for item in items:

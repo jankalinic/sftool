@@ -11,62 +11,22 @@ ORIGINAL_NPC_DIR_PATH = os.path.join(ORIGINAL_DIR_PATH, "npc")
 ORIGINAL_ADS_DIR_PATH = os.path.join(ORIGINAL_DIR_PATH, "ads")
 ORIGINAL_TAVERN_DIR_PATH = os.path.join(ORIGINAL_DIR_PATH, "tavern")
 ORIGINAL_QUESTS_DIR_PATH = os.path.join(ORIGINAL_DIR_PATH, "quests")
-# ------
-ORIGINAL_TV_IMAGE_PATH = os.path.join(ORIGINAL_TAVERN_DIR_PATH, "colorTV.png")
-ORIGINAL_MENU_BUTTON_IMAGE_PATH = os.path.join(ORIGINAL_TAVERN_DIR_PATH, "menuButton.png")
-ORIGINAL_MENU_BUTTON_NOTIFICATION_IMAGE_PATH = os.path.join(ORIGINAL_TAVERN_DIR_PATH, "menuButtonNotification.png")
-ORIGINAL_DONT_CLOSE_ADD_BUTTON_IMAGE_PATH = os.path.join(ORIGINAL_TAVERN_DIR_PATH, "dontCloseButton.png")
-ORIGINAL_BEER_MUSHROOM_BUTTON_IMAGE_PATH = os.path.join(ORIGINAL_TAVERN_DIR_PATH, "beerMushroomButton.png")
-ORIGINAL_BEER_TAVERN_BUTTON_IMAGE_PATH = os.path.join(ORIGINAL_TAVERN_DIR_PATH, "beerButton.png")
-
-
-FIRST_QUEST_IMAGE_PATH = os.path.join(ORIGINAL_QUESTS_DIR_PATH, "firstQuest.png")
-SECOND_QUEST_IMAGE_PATH = os.path.join(ORIGINAL_QUESTS_DIR_PATH, "secondQuest.png")
-THIRD_QUEST_IMAGE_PATH = os.path.join(ORIGINAL_QUESTS_DIR_PATH, "thirdQuest.png")
-QUEST_PROGRESS_BAR_IMAGE_PATH = os.path.join(ORIGINAL_QUESTS_DIR_PATH, "questProgressBar.png")
-QUEST_DONE_OK_BUTTON_IMAGE_PATH = os.path.join(ORIGINAL_QUESTS_DIR_PATH, "questDoneOkButton.png")
-QUEST_AD_IMAGE_PATH = os.path.join(ORIGINAL_QUESTS_DIR_PATH, "questAd.png")
-QUEST_AD_WITHOUT_HOURGLASS_IMAGE_PATH = os.path.join(ORIGINAL_QUESTS_DIR_PATH, "questAdWithoutHourglass.png")
-ACCEPT_QUEST_BUTTON_IMAGE_PATH = os.path.join(ORIGINAL_QUESTS_DIR_PATH, "acceptQuestButton.png")
-
-TAVERN_MASTER_IMAGE_PATH = os.path.join(ORIGINAL_NPC_DIR_PATH, "tavernMaster.png")
-DRUNKEN_GUY_IMAGE_PATH = os.path.join(ORIGINAL_NPC_DIR_PATH, "drunkenGuy.png")
-PRINCE_CHARMING_IMAGE_PATH = os.path.join(ORIGINAL_NPC_DIR_PATH, "princeCharming.png")
-PRINCESS_DIANA_IMAGE_PATH = os.path.join(ORIGINAL_NPC_DIR_PATH, "princessDiana.png")
-ORC_IMAGE_PATH = os.path.join(ORIGINAL_NPC_DIR_PATH, "orc.png")
-CONAN_IMAGE_PATH = os.path.join(ORIGINAL_NPC_DIR_PATH, "conan.png")
-ELF_IMAGE_PATH = os.path.join(ORIGINAL_NPC_DIR_PATH, "elf.png")
-WIZARD_IMAGE_PATH = os.path.join(ORIGINAL_NPC_DIR_PATH, "wizard.png")
-KK_MEMBER_IMAGE_PATH = os.path.join(ORIGINAL_NPC_DIR_PATH, "kkMember.png")
-MAP_GUY_IMAGE_PATH = os.path.join(ORIGINAL_NPC_DIR_PATH, "mapGuy.png")
-# ------
-# list of close ad buttons as they may vary
-ORIGINAL_CLOSE_AD_IMAGES_DIR_PATH = os.path.join(ORIGINAL_ADS_DIR_PATH, "closebuttons")
-ORIGINAL_CLOSE_AD_IMAGES_PATHS = [os.path.join(ORIGINAL_CLOSE_AD_IMAGES_DIR_PATH, file) for file in os.listdir(ORIGINAL_CLOSE_AD_IMAGES_DIR_PATH)]
+ORIGINAL_BUTTON_DIR_PATH = os.path.join(ORIGINAL_DIR_PATH, "buttons")
 # ------
 SCREENSHOT_DIR_PATH = os.path.join(IMAGES_DIR_PATH, "screenshots")
-SCREENSHOT_PATH_PREFIX = os.path.join(SCREENSHOT_DIR_PATH, "screenshot-")
-CROPPED_SCREENSHOT_PATH_PREFIX = os.path.join(SCREENSHOT_DIR_PATH, "cropped-")
 # ------
 OFFLINE = "offline"
-AD_SUFFIX = "ad"
-CLOSE_AD_SUFFIX = "close-ad"
-TIERS_SUFFIX = "tiers"
-FIRST_QUEST_SUFFIX = "first-quest"
-MENU_BUTTON_SUFFIX = "menu-button"
-GOLD_NUM_SUFFIX = "gold-number"
-EXP_NUM_SUFFIX = "exp-number"
-TIME_NUM_SUFFIX = "time-number"
 NPC_SUFFIX = "npc"
-# ------
-# Thresholds
+CROPPED_SUFFIX = "cropped"
+SCREENSHOT_SUFFIX = "screenshot"
+# ------ THRESHOLDS
 QUEST_PROGRESS_BAR_DIFF_THRESHOLD = 0.2
 MENU_BUTTON_IMAGE_DIFF_THRESHOLD = 0.1
 TV_IMAGE_DIFF_THRESHOLD = 0.12
 CLOSE_AD_DIFF_THRESHOLD = 0.5
-QUEST_DIFF_THRESHOLD = 0.09
-NPC_THRESHOLD = 0.15
-# ------
+QUEST_DIFF_THRESHOLD = 0.01
+NPC_THRESHOLD = 0.01
+# ------ DICT KEYS
 NAME_KEY = "name"
 DIMENSIONS_KEY = "dimensions"
 CLICK_LOCATION_KEY = "click_location"
@@ -93,60 +53,61 @@ def new_coords(dimensions, location):
     return {DIMENSIONS_KEY: dimensions, CLICK_LOCATION_KEY: location}
 
 
-def new_npc(name, path, dimensions, click_location):
-    return {NAME_KEY: name, PATH_KEY: path, DIMENSIONS_KEY: dimensions, CLICK_LOCATION_KEY: click_location}
+def new_quest_data(name, dimensions):
+    return {NAME_KEY: name, DIMENSIONS_KEY: dimensions}
 
 
-def new_quest(name, path, dimensions, click_location):
-    return {NAME_KEY: name, PATH_KEY: path, DIMENSIONS_KEY: dimensions, CLICK_LOCATION_KEY: click_location}
+def new_npc(name, dimensions, click_location):
+    return {NAME_KEY: name, PATH_KEY: os.path.join(ORIGINAL_NPC_DIR_PATH, (name + IMAGE_EXTENSION)), DIMENSIONS_KEY: dimensions, CLICK_LOCATION_KEY: click_location}
 
 
-def new_button(name, path, dimensions, click_location):
-    return {NAME_KEY: name, PATH_KEY: path, DIMENSIONS_KEY: dimensions, CLICK_LOCATION_KEY: click_location}
+def new_quest(name, dimensions, click_location):
+    return {NAME_KEY: name, PATH_KEY: os.path.join(ORIGINAL_QUESTS_DIR_PATH, (name + IMAGE_EXTENSION)), DIMENSIONS_KEY: dimensions, CLICK_LOCATION_KEY: click_location}
+
+
+def new_button(name, dimensions, click_location):
+    return {NAME_KEY: name, PATH_KEY: os.path.join(ORIGINAL_BUTTON_DIR_PATH, (name + IMAGE_EXTENSION)), DIMENSIONS_KEY: dimensions, CLICK_LOCATION_KEY: click_location}
 
 
 # ---------------------------
-#  ADS
-TV_LOCATION = new_location(188, 277)
-TV_IMAGE_DIMENSIONS = new_dimensions(110, 180, 275, 360)
+# BUTTONS
+# ----- ADS
+AD_BUTTON = new_button("ad", new_dimensions(110, 180, 275, 360), new_location(188, 277))
+CLOSE_AD_BUTTON = new_button("close-ad", new_dimensions(980, 0, 1080, 100), new_location(1013, 55))
+DONT_CLOSE_AD_BUTTON = new_button("dont-close-button", new_dimensions(980, 0, 1080, 100), new_location(0, 0))
+# ----- BEER
+DRINK_BEER_MUSHROOM_BUTTON = new_button("beer-mushroom-button", new_dimensions(578, 1425, 672, 1515), new_location(624, 1462))
+BEER_TAVERN_BUTTON = new_button("beer-button", new_dimensions(324, 1738, 443, 1858), new_location(324, 1738))
+# ----- QUEST
+ACCEPT_QUEST_BUTTON = new_button("accept-quest-button", new_dimensions(353, 1420, 728, 1505), new_location(533, 1450))
+QUEST_DONE_OK_BUTTON = new_button("quest-done-ok-button", new_dimensions(315, 1444, 760, 1603), new_location(536, 1530))
+# ---------------------------------------------
+# QUESTS
+# ----------- NPCS
+TAVERN_MASTER = new_npc("tavern-master", new_dimensions(779, 764, 879, 864), new_location(822, 815))
 # ------
-CLOSE_AD_LOCATION = new_location(1013, 55)
-CLOSE_AD_DIMENSIONS = new_dimensions(980, 30, 1050, 100)
+DRUNKEN_GUY = new_npc("drunken-guy", new_dimensions(465, 946, 624, 1154), new_location(536, 1530))
+PRINCE_CHARMING = new_npc("prince-charming", new_dimensions(188, 1050, 355, 1175), new_location(264, 1122))
+PRINCESS_DIANA = new_npc("princess-diana", new_dimensions(406, 848, 570, 1010), new_location(494, 974))
+ORC = new_npc("orc", new_dimensions(420, 940, 610, 1040), new_location(505, 995))
+CONAN = new_npc("conan", new_dimensions(338, 848, 565, 1000), new_location(426, 935))
+ELF = new_npc("elf", new_dimensions(445, 1010, 627, 1100), new_location(545, 1060))
+WIZARD = new_npc("wizard", new_dimensions(318, 862, 444, 980), new_location(394, 932))
+KK_MEMBER = new_npc("kk-member", new_dimensions(329, 934, 471, 1037), new_location(394, 984))
+MAP_GUY = new_npc("map-guy", new_dimensions(431, 696, 536, 840), new_location(484, 826))
+FIDGET = new_npc("fidget", new_dimensions(560, 945, 746, 1044), new_location(642, 999))
 # ------
-MENU_BUTTON_IMAGE_DIMENSIONS = new_dimensions(65, 1725, 210, 1865)
-# ---------------------------
-#  QUESTS
-TAVERN_MASTER = new_npc("tavern-master", TAVERN_MASTER_IMAGE_PATH, new_dimensions(779, 764, 879, 864), new_location(822, 815))
+QUEST_NPC_LIST = [DRUNKEN_GUY, PRINCE_CHARMING, PRINCESS_DIANA, ORC, CONAN, ELF, WIZARD, KK_MEMBER, MAP_GUY, FIDGET]
+# ------ 200x57
+GOLD_DATA = new_quest_data("gold-number", new_dimensions(130, 1240, 330, 1297))
+EXP_DATA = new_quest_data("exp-number", new_dimensions(130, 1313, 330, 1370))
+TIME_DATA = new_quest_data("time-number", new_dimensions(130, 1390, 330, 1447))
 # ------
-DRUNKEN_GUY = new_npc("drunken-guy", DRUNKEN_GUY_IMAGE_PATH, new_dimensions(465, 946, 624, 1154), new_location(536, 1530))
-PRINCE_CHARMING = new_npc("prince-charming", PRINCE_CHARMING_IMAGE_PATH,new_dimensions(188, 1050, 355, 1175), new_location(264, 1122))
-PRINCESS_DIANA = new_npc("princess-diana", PRINCESS_DIANA_IMAGE_PATH,new_dimensions(406, 848, 570, 1010), new_location(494, 974))
-ORC = new_npc("orc", ORC_IMAGE_PATH,new_dimensions(420, 940, 610, 1040), new_location(505, 995))
-CONAN = new_npc("conan", CONAN_IMAGE_PATH, new_dimensions(338, 848, 565, 1000), new_location(426, 935))
-ELF = new_npc("elf", ELF_IMAGE_PATH, new_dimensions(445, 1010, 627, 1100), new_location(545, 1060))
-WIZARD = new_npc("wizard", WIZARD_IMAGE_PATH, new_dimensions(318, 862, 444, 980), new_location(394, 932))
-KK_MEMBER = new_npc("kk-member", KK_MEMBER_IMAGE_PATH, new_dimensions(329, 934, 471, 1037), new_location(394, 984))
-MAP_GUY = new_npc("map-guy", MAP_GUY_IMAGE_PATH, new_dimensions(431, 696, 536, 840), new_location(484, 826))
-# -------
-QUEST_NPC_LIST = [DRUNKEN_GUY, PRINCE_CHARMING, PRINCESS_DIANA, ORC, CONAN, ELF, WIZARD, KK_MEMBER]
+QUEST_AD = new_quest("quest-ad", new_dimensions(767, 1420, 1048, 1494), new_location(888, 1444))
+QUEST_AD_WO_HOURGLASS = new_quest("quest-ad-without-hourglass", new_dimensions(591, 1388, 967, 1487), new_location(764, 1419))
+QUEST_PROGRESS_BAR = new_quest("quest-progress-bar", new_dimensions(641, 1638, 678, 1654), new_location(0, 0))
 # ------
-DRINK_BEER_MUSHROOM_BUTTON = new_button("mushroom-button", ORIGINAL_BEER_MUSHROOM_BUTTON_IMAGE_PATH, new_dimensions(578, 1425, 672, 1515), new_location(624, 1462))
-BEER_TAVERN_BUTTON = new_button("beer-button", ORIGINAL_BEER_TAVERN_BUTTON_IMAGE_PATH, new_dimensions(324, 1738, 443, 1858), new_location(324, 1738))
-
-# ------
-GOLD_TEXT_DIMENSIONS = new_dimensions(136, 1243, 316, 1292)
-EXP_TEXT_DIMENSIONS = new_dimensions(136, 1316, 316, 1365)
-TIME_TEXT_DIMENSIONS = new_dimensions(136, 1395, 316, 1444)
-# ------
-QUEST_AD = new_quest("quest-ad", QUEST_AD_IMAGE_PATH, new_dimensions(767, 1420, 1048, 1494), new_location(888, 1444))
-QUEST_AD_WO_HOURGLASS = new_quest("quest-ad-without-hourglass", QUEST_AD_WITHOUT_HOURGLASS_IMAGE_PATH, new_dimensions(591, 1388, 967, 1487), new_location(764, 1419))
-QUEST_PROGRESS_BAR = new_quest("quest-progress-bar", QUEST_PROGRESS_BAR_IMAGE_PATH, new_dimensions(641, 1638, 678, 1654), new_location(0, 0))
-FIRST_QUEST = new_quest("first-quest", FIRST_QUEST_IMAGE_PATH, new_dimensions(409, 425, 471, 468), new_location(444, 448))
-SECOND_QUEST = new_quest("second-quest", SECOND_QUEST_IMAGE_PATH, new_dimensions(644, 425, 702, 468), new_location(680, 448))
-THIRD_QUEST = new_quest("third-quest", THIRD_QUEST_IMAGE_PATH, new_dimensions(878, 425, 949, 468), new_location(911, 448))
+FIRST_QUEST = new_quest("first-quest", new_dimensions(409, 425, 471, 468), new_location(444, 448))
+SECOND_QUEST = new_quest("second-quest", new_dimensions(644, 425, 702, 468), new_location(680, 448))
+THIRD_QUEST = new_quest("third-quest", new_dimensions(878, 425, 949, 468), new_location(911, 448))
 QUEST_LIST = [FIRST_QUEST, SECOND_QUEST, THIRD_QUEST]
-# ------
-ACCEPT_QUEST_BUTTON = new_button("accept-quest", ACCEPT_QUEST_BUTTON_IMAGE_PATH, new_dimensions(353, 1420, 728, 1505), new_location(533, 1450))
-# ------
-QUEST_DONE_OK_BUTTON = new_quest("quest-done-ok-button", QUEST_DONE_OK_BUTTON_IMAGE_PATH, new_dimensions(315, 1444, 760, 1603), new_location(536, 1530))
-
