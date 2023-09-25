@@ -99,21 +99,31 @@ def crop_menu_button(emulator_device):
     crop_screenshot(emulator_device, const.MENU_BUTTON_IMAGE_DIMENSIONS, const.MENU_BUTTON_SUFFIX)
 
 
+def crop_beer_button(emulator_device):
+    crop_screenshot(emulator_device, const.BEER_TAVERN_BUTTON[const.DIMENSIONS_KEY], const.BEER_TAVERN_BUTTON[const.NAME_KEY])
+
+
+def is_in_quest(emulator_device):
+    crop_quest_progress_bar(emulator_device)
+    return are_images_similar(emulator_device,
+                                   get_cropped_screenshot_path(emulator_device, const.QUEST_PROGRESS_BAR[const.NAME_KEY]),
+                                   const.QUEST_PROGRESS_BAR[const.PATH_KEY],
+                                   const.QUEST_PROGRESS_BAR_DIFF_THRESHOLD)
+
+
 def is_in_tavern(emulator_device):
     logger.debug(f"[{emulator_device.serial}]: Looking for menu button")
 
-    if are_images_similar(emulator_device,
-                           get_cropped_screenshot_path(emulator_device, const.MENU_BUTTON_SUFFIX),
-                           const.ORIGINAL_MENU_BUTTON_NOTIFICATION_IMAGE_PATH,
-                           const.MENU_BUTTON_IMAGE_DIFF_THRESHOLD):
-        logger.debug(f"[{emulator_device.serial}]: You have a notification")
 
-        return True
+    # pivo + neni v questu + neni v selectu
+    crop_beer_button(emulator_device)
 
     return are_images_similar(emulator_device,
-                              get_cropped_screenshot_path(emulator_device, const.MENU_BUTTON_SUFFIX),
-                              const.ORIGINAL_MENU_BUTTON_IMAGE_PATH,
-                              const.MENU_BUTTON_IMAGE_DIFF_THRESHOLD)
+                              get_cropped_screenshot_path(emulator_device, const.BEER_TAVERN_BUTTON[const.NAME_KEY]),
+                              const.BEER_TAVERN_BUTTON[const.PATH_KEY],
+                              const.MENU_BUTTON_IMAGE_DIFF_THRESHOLD) and\
+        not is_in_quest_selection(emulator_device) and\
+        not is_in_quest(emulator_device)
 
 
 def get_npc_image_path(npc_name):
@@ -155,6 +165,7 @@ def get_number_from_image(image_path):
 
 
 def is_in_quest_selection(emulator_device):
+    crop_accept_button(emulator_device)
     return are_images_similar(emulator_device,
                               get_cropped_screenshot_path(emulator_device, const.ACCEPT_QUEST_BUTTON[const.NAME_KEY]),
                               const.ACCEPT_QUEST_BUTTON[const.PATH_KEY],
@@ -176,7 +187,7 @@ def go_to_tavern_using_key(emulator_device):
     take_screenshot(emulator_device)
     crop_menu_button(emulator_device)
 
-    if not is_in_tavern(emulator_device) or is_in_quest_selection(emulator_device):
+    if is_in_tavern(emulator_device):
         logger.debug(f"[{emulator_device.serial}]: Pressing 't' did not work")
         go_to_tavern_using_key(emulator_device)
 
@@ -186,6 +197,7 @@ def crop_close_ad(emulator_device):
 
 
 def is_close_ad_present(emulator_device):
+    crop_close_ad(emulator_device)
     logger.debug(f"[{emulator_device.serial}]: Looking for AD close button")
 
     for image in const.ORIGINAL_CLOSE_AD_IMAGES_PATHS:
@@ -222,6 +234,152 @@ def close_ad_if_playing(emulator_device):
         crop_menu_button(emulator_device)
         if is_in_tavern(emulator_device):
             logger.debug(f"[{emulator_device.serial}]: is in tavern")
+
+
+
+def crop_quest_progress_bar(emulator_device):
+    crop_screenshot(emulator_device, const.QUEST_PROGRESS_BAR[const.DIMENSIONS_KEY], const.QUEST_PROGRESS_BAR[const.NAME_KEY])
+
+
+def crop_quest_ad(emulator_device):
+    crop_screenshot(emulator_device, const.QUEST_AD[const.DIMENSIONS_KEY], const.QUEST_AD[const.NAME_KEY])
+    crop_screenshot(emulator_device, const.QUEST_AD_WO_HOURGLASS[const.DIMENSIONS_KEY], const.QUEST_AD_WO_HOURGLASS[const.NAME_KEY])
+
+
+def drink_beer_and_return_to_tavern(emulator_device):
+    drink_beer(emulator_device)
+    go_to_tavern_using_key(emulator_device)
+
+
+def is_quest_skipable_with_ad(emulator_device):
+    crop_quest_ad(emulator_device)
+
+    return are_images_similar(emulator_device,
+                                   get_cropped_screenshot_path(emulator_device, const.QUEST_AD[const.NAME_KEY]),
+                                   const.QUEST_AD[const.PATH_KEY],
+                                   const.MENU_BUTTON_IMAGE_DIFF_THRESHOLD) or \
+        are_images_similar(emulator_device,
+                                   get_cropped_screenshot_path(emulator_device, const.QUEST_AD_WO_HOURGLASS[const.NAME_KEY]),
+                                   const.QUEST_AD_WO_HOURGLASS[const.PATH_KEY],
+                                   const.MENU_BUTTON_IMAGE_DIFF_THRESHOLD)
+
+
+def skip_quest_with_ad(emulator_device):
+    ad_location = const.QUEST_AD[const.CLICK_LOCATION_KEY]
+    emulator_device.click(ad_location[const.X_KEY], ad_location[const.Y_KEY])
+    time.sleep(1)
+    close_ad_if_playing(emulator_device)
+
+
+def crop_quest_done(emulator_device):
+    crop_screenshot(emulator_device, const.QUEST_DONE_OK_BUTTON[const.DIMENSIONS_KEY], const.QUEST_DONE_OK_BUTTON[const.NAME_KEY])
+
+
+def is_quest_done(emulator_device):
+    crop_quest_done(emulator_device)
+    return are_images_similar(emulator_device,
+                                   get_cropped_screenshot_path(emulator_device, const.QUEST_DONE_OK_BUTTON[const.NAME_KEY]),
+                                   const.QUEST_DONE_OK_BUTTON[const.PATH_KEY],
+                                   const.MENU_BUTTON_IMAGE_DIFF_THRESHOLD)
+
+
+
+
+def crop_accept_button(emulator_device):
+    crop_screenshot(emulator_device, const.ACCEPT_QUEST_BUTTON[const.DIMENSIONS_KEY], const.ACCEPT_QUEST_BUTTON[const.NAME_KEY])
+
+
+def crop_gold(emulator_device):
+    crop_screenshot(emulator_device, const.GOLD_TEXT_DIMENSIONS, const.GOLD_NUM_SUFFIX)
+
+
+def crop_exp(emulator_device):
+    crop_screenshot(emulator_device, const.EXP_TEXT_DIMENSIONS, const.EXP_NUM_SUFFIX)
+
+
+def crop_time(emulator_device):
+    crop_screenshot(emulator_device, const.TIME_TEXT_DIMENSIONS, const.TIME_NUM_SUFFIX)
+
+
+def crop_quest_numbers(emulator_device):
+    crop_gold(emulator_device)
+    crop_exp(emulator_device)
+    crop_time(emulator_device)
+
+
+def crop_beer_mushroom_button(emulator_device):
+    crop_screenshot(emulator_device,
+                         const.DRINK_BEER_MUSHROOM_BUTTON[const.DIMENSIONS_KEY],
+                         const.DRINK_BEER_MUSHROOM_BUTTON[const.NAME_KEY])
+
+
+def is_enough_thirst(emulator_device):
+    crop_tavern_master(emulator_device)
+    return not are_images_similar(emulator_device,
+                                       const.TAVERN_MASTER[const.PATH_KEY],
+                                       get_cropped_screenshot_path(emulator_device, const.NPC_SUFFIX),
+                                       const.NPC_THRESHOLD)
+
+
+def can_drink_more(emulator_device, can_use_mushrooms):
+    if can_use_mushrooms:
+        crop_beer_mushroom_button(emulator_device)
+
+        if are_images_similar(emulator_device,
+                                   const.DRINK_BEER_MUSHROOM_BUTTON[const.PATH_KEY],
+                                   get_cropped_screenshot_path(emulator_device, const.DRINK_BEER_MUSHROOM_BUTTON[const.NAME_KEY]),
+                                   const.MENU_BUTTON_IMAGE_DIFF_THRESHOLD):
+            return True
+
+    return False
+
+
+def drink_beer(emulator_device):
+    logger.debug(f"[{emulator_device.serial}]: Drink beer")
+    emulator_device.click(const.DRINK_BEER_MUSHROOM_BUTTON[const.CLICK_LOCATION_KEY][const.X_KEY], const.DRINK_BEER_MUSHROOM_BUTTON[const.CLICK_LOCATION_KEY][const.Y_KEY])
+
+
+def click_ok_quest_done(emulator_device):
+    emulator_device.click(const.QUEST_DONE_OK_BUTTON[const.DIMENSIONS_KEY])
+
+
+def open_quest_from_npc(emulator_device):
+    for npc in const.QUEST_NPC_LIST:
+        crop_screenshot(emulator_device, npc[const.DIMENSIONS_KEY], const.NPC_SUFFIX)
+        if are_images_similar(emulator_device,
+                                   get_cropped_screenshot_path(emulator_device, const.NPC_SUFFIX),
+                                   npc[const.PATH_KEY],
+                                   const.NPC_THRESHOLD):
+            emulator_device.click(npc[const.CLICK_LOCATION_KEY][const.X_KEY], npc[const.CLICK_LOCATION_KEY][const.Y_KEY])
+            time.sleep(1)
+            break
+
+
+def crop_first_quest(emulator_device):
+    crop_screenshot(emulator_device, const.FIRST_QUEST[const.DIMENSIONS_KEY], const.FIRST_QUEST[const.NAME_KEY])
+
+
+def crop_second_quest(emulator_device):
+    crop_screenshot(emulator_device, const.SECOND_QUEST[const.DIMENSIONS_KEY], const.SECOND_QUEST[const.NAME_KEY])
+
+
+def crop_third_quest(emulator_device):
+    crop_screenshot(emulator_device, const.THIRD_QUEST[const.DIMENSIONS_KEY], const.THIRD_QUEST[const.NAME_KEY])
+
+
+def crop_tavern_master(emulator_device):
+    crop_screenshot(emulator_device, const.TAVERN_MASTER[const.DIMENSIONS_KEY], const.NPC_SUFFIX)
+
+
+def is_selected_correct_quest(emulator_device, quest_num):
+    take_screenshot(emulator_device)
+    selected_quest = const.QUEST_LIST[quest_num]
+    crop_screenshot(emulator_device, selected_quest[const.DIMENSIONS_KEY], selected_quest[const.NAME_KEY])
+    return are_images_similar(emulator_device,
+                                   get_cropped_screenshot_path(emulator_device, selected_quest[const.NAME_KEY]),
+                                   selected_quest[const.PATH_KEY],
+                                   const.QUEST_DIFF_THRESHOLD)
+
 
 
 def clean_directory(directory_path):
