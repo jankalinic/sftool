@@ -1,3 +1,4 @@
-images/screenshots/*.png
+images/screenshots/*
+!images/screenshots
 */__pycache__/*
 .idea/
