@@ -38,6 +38,7 @@ CONAN_IMAGE_PATH = os.path.join(ORIGINAL_NPC_DIR_PATH, "conan.png")
 ELF_IMAGE_PATH = os.path.join(ORIGINAL_NPC_DIR_PATH, "elf.png")
 WIZARD_IMAGE_PATH = os.path.join(ORIGINAL_NPC_DIR_PATH, "wizard.png")
 KK_MEMBER_IMAGE_PATH = os.path.join(ORIGINAL_NPC_DIR_PATH, "kkMember.png")
+MAP_GUY_IMAGE_PATH = os.path.join(ORIGINAL_NPC_DIR_PATH, "mapGuy.png")
 # ------
 # list of close ad buttons as they may vary
 ORIGINAL_CLOSE_AD_IMAGES_DIR_PATH = os.path.join(ORIGINAL_ADS_DIR_PATH, "closebuttons")
@@ -122,9 +123,10 @@ PRINCE_CHARMING = new_npc("prince-charming", PRINCE_CHARMING_IMAGE_PATH,new_dime
 PRINCESS_DIANA = new_npc("princess-diana", PRINCESS_DIANA_IMAGE_PATH,new_dimensions(406, 848, 570, 1010), new_location(494, 974))
 ORC = new_npc("orc", ORC_IMAGE_PATH,new_dimensions(420, 940, 610, 1040), new_location(505, 995))
 CONAN = new_npc("conan", CONAN_IMAGE_PATH, new_dimensions(338, 848, 565, 1000), new_location(426, 935))
-ELF = new_npc("elf", ELF_IMAGE_PATH, new_dimensions(338, 848, 565, 1000), new_location(426, 935))
+ELF = new_npc("elf", ELF_IMAGE_PATH, new_dimensions(445, 1010, 627, 1100), new_location(545, 1060))
 WIZARD = new_npc("wizard", WIZARD_IMAGE_PATH, new_dimensions(318, 862, 444, 980), new_location(394, 932))
 KK_MEMBER = new_npc("kk-member", KK_MEMBER_IMAGE_PATH, new_dimensions(329, 934, 471, 1037), new_location(394, 984))
+MAP_GUY = new_npc("map-guy", MAP_GUY_IMAGE_PATH, new_dimensions(431, 696, 536, 840), new_location(484, 826))
 # -------
 QUEST_NPC_LIST = [DRUNKEN_GUY, PRINCE_CHARMING, PRINCESS_DIANA, ORC, CONAN, ELF, WIZARD, KK_MEMBER]
 # ------

@@ -160,8 +160,12 @@ def get_number_from_image(image_path):
         numeric_text = text.split(":")
         return (int(numeric_text[0]) * 60) + int(numeric_text[1])
 
+    elif text == "":
+        logger.debug("empty-text to number")
     else:
         return int(''.join(filter(str.isdigit, text)))
+
+
 
 
 def is_in_quest_selection(emulator_device):
@@ -350,7 +354,8 @@ def open_quest_from_npc(emulator_device):
                                    get_cropped_screenshot_path(emulator_device, const.NPC_SUFFIX),
                                    npc[const.PATH_KEY],
                                    const.NPC_THRESHOLD):
-            emulator_device.click(npc[const.CLICK_LOCATION_KEY][const.X_KEY], npc[const.CLICK_LOCATION_KEY][const.Y_KEY])
+            click_location = npc[const.CLICK_LOCATION_KEY]
+            emulator_device.click(click_location[const.X_KEY], click_location[const.Y_KEY])
             time.sleep(1)
             break
 
