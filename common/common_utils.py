@@ -150,14 +150,16 @@ def enhance_close_ad_buttons(image_path):
     # logger.debug(f"Execution of black and white enhancing: {time.time() - start_time:.6f} seconds")
 
 
-def enhance_image_contrast(image_path):
+def enhance_image_bw(image_path, threshold=const.POLARIZE_THRESHOLD):
     start_time = time.time()
 
     image = Image.open(image_path)
-    contrast = ImageEnhance.Contrast(image).enhance(3)
-    contrast.save(get_contrasted_image_path(image_path))
+    image = image.convert('L')
+    image = image.point(lambda x: 0 if x < threshold else 255, '1')
+    image.save(get_contrasted_image_path(image_path))
 
     # logger.debug(f"Execution of contrast enhancing: {time.time() - start_time:.6f} seconds")
+    time.sleep(0.5)
 
 
 def make_image_black_white(image_path):
@@ -173,33 +175,44 @@ def make_image_black_white(image_path):
     # logger.debug(f"Execution of black and white enhancing: {time.time() - start_time:.6f} seconds")
 
 
-def get_text_from_image(image_path, config=6):
-    return pytesseract.image_to_string(Image.open(image_path), config=f'--psm {config}').replace("\n", "").replace(" ", "").replace("\t", "")
+def get_number_textfile_path(emulator_device):
+    return os.path.join(const.NUMBER_TEXTFILE, emulator_device.serial,  "out")
+
+
+def get_text_from_image(emulator_device, image_path, config="--psm 8"):
+    # return pytesseract.image_to_string(Image.open(image_path), config=f'--psm {config}')
+    tesseract_command = f"tesseract {image_path} {get_number_textfile_path(emulator_device)} {config} txt"
+    subprocess.run(tesseract_command, shell=True, capture_output=True)
+
+    result = ""
+
+    with open(get_number_textfile_path(emulator_device) + ".txt", "r") as output_file:
+        result = output_file.readline()
+
+    if result == "":
+        logger.debug("empty-text to number")
+        exit(1)
+
+    return result.replace("\n", "").replace("\t", "").replace(" ", "").replace(",", ".")
 
 
 def smoother_image(in_img, out_img, radius):
     Image.open(in_img).filter(ImageFilter.GaussianBlur(radius=radius)).save(out_img)
 
 
-def get_number_from_image(image_path, config=6, smoother=True):
+def text_to_seconds(number_with_doubledot):
+    numbers = number_with_doubledot.split(":")
+    return (int(numbers[0]) * 60) + int(numbers[1])
 
-    if smoother:
-        make_image_black_white(image_path)
-        smoother_image(get_contrasted_image_path(image_path), get_contrasted_image_path(image_path), 1.25)
+
+def get_number_from_image(image_path, config="--psm 8 -c tessedit_char_whitelist=0123456789.,:"):
+    enhance_image_bw(image_path)
     text = get_text_from_image(get_contrasted_image_path(image_path), config)
 
-    if "," in text:
-        return float(text.replace(",", "."))
-    elif "." in text:
+    if "." in text:
         return float(text)
     elif ":" in text:
-        numeric_text = text.split(":")
-        return (int(numeric_text[0]) * 60) + int(numeric_text[1])
-    elif text == "":
-        logger.debug("empty-text to number")
-        if config == 7:
-            return 0
-        return get_number_from_image(image_path, config=7, smoother=False)
+        return text_to_seconds(text)
     else:
         if is_number(text):
             return int(''.join(filter(str.isdigit, text)))
@@ -257,13 +270,14 @@ def is_close_ad_present(emulator_device):
         logger.debug(f"[{emulator_device.serial}]: there is only do NOT close button")
         return False
 
-    # enhance_close_ad_buttons(get_cropped_screenshot_path(emulator_device, const.CLOSE_AD_BUTTON[const.NAME_KEY]))
+    enhance_image_bw(get_cropped_screenshot_path(emulator_device, const.CLOSE_AD_BUTTON[const.NAME_KEY]))
 
-    text = get_text_from_image(get_cropped_screenshot_path(emulator_device, const.CLOSE_AD_BUTTON[const.NAME_KEY]))
+    text = get_text_from_image(emulator_device, get_cropped_screenshot_path(emulator_device, const.CLOSE_AD_BUTTON[const.NAME_KEY]), f"--psm 6 -c tessedit_char_whitelist={const.CLOSE_BUTTON_WHITELIST_STRING}")
 
-    if "x" in text or ">" in text or "<" in text or "yy" in text or "»" in text or "«" in text:
-        logger.debug(f"[{emulator_device.serial}]: X is in the corner")
-        return True
+    for char in const.CLOSE_BUTTON_WHITELIST_STRING:
+        if char in text:
+            logger.debug(f"[{emulator_device.serial}]: X is in the corner")
+            return True
 
     logger.debug(f"[{emulator_device.serial}]: searching ad close using images")
 

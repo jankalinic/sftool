@@ -14,8 +14,10 @@ ORIGINAL_QUESTS_DIR_PATH = os.path.join(ORIGINAL_DIR_PATH, "quests")
 ORIGINAL_BUTTON_DIR_PATH = os.path.join(ORIGINAL_DIR_PATH, "buttons")
 # ------
 SCREENSHOT_DIR_PATH = os.path.join(IMAGES_DIR_PATH, "screenshots")
-LIST_OF_CLOSEBUTTONS = [file for file in os.listdir(ORIGINAL_ADS_CLOSE_BUTTONS_DIR_PATH) if file.endswith(".png")]
+NUMBER_TEXTFILE = os.path.join(SCREENSHOT_DIR_PATH)
 
+LIST_OF_CLOSEBUTTONS = [file for file in os.listdir(ORIGINAL_ADS_CLOSE_BUTTONS_DIR_PATH) if file.endswith(".png")]
+CLOSE_BUTTON_WHITELIST_STRING = "xyXY><»«"
 # ------
 OFFLINE = "offline"
 NPC_SUFFIX = "npc"
@@ -29,6 +31,8 @@ CLOSE_AD_DIFF_THRESHOLD = 0.5
 QUEST_DIFF_THRESHOLD = 0.01
 QUEST_TIERS_DIFF_THRESHOLD = 0.02
 NPC_THRESHOLD = 0.05
+
+POLARIZE_THRESHOLD = 100
 # ------ DICT KEYS
 NAME_KEY = "name"
 DIMENSIONS_KEY = "dimensions"
@@ -104,9 +108,9 @@ FIDGET = new_npc("fidget", new_dimensions(560, 945, 746, 1044), new_location(642
 # ------
 QUEST_NPC_LIST = [DRUNKEN_GUY, PRINCE_CHARMING, PRINCESS_DIANA, ORC, CONAN, ELF, WIZARD, KK_MEMBER, MAP_GUY, FIDGET]
 # ------ 200x57
-GOLD_DATA = new_quest_data("gold-number", new_dimensions(133, 1238, 330, 1297))
-EXP_DATA = new_quest_data("exp-number", new_dimensions(133, 1313, 330, 1370))
-TIME_DATA = new_quest_data("time-number", new_dimensions(133, 1390, 330, 1447))
+GOLD_DATA = new_quest_data("gold-number", new_dimensions(133, 1238, 330, 1298))
+EXP_DATA = new_quest_data("exp-number", new_dimensions(133, 1313, 330, 1373))
+TIME_DATA = new_quest_data("time-number", new_dimensions(133, 1390, 330, 1450))
 # ------
 QUEST_AD = new_quest("quest-ad", new_dimensions(767, 1420, 1048, 1494), new_location(888, 1444))
 QUEST_AD_WO_HOURGLASS = new_quest("quest-ad-without-hourglass", new_dimensions(591, 1388, 967, 1487), new_location(764, 1419))
