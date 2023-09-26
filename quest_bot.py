@@ -63,11 +63,13 @@ def select_best_quest(emulator_device):
 def open_tavern_master_menu(emualator_device):
     click_location = const.TAVERN_MASTER[const.CLICK_LOCATION_KEY]
     emualator_device.click(click_location[const.X_KEY], click_location[const.Y_KEY])
+    time.sleep(0.5)
 
 
 def exit_done_quest(emulator_device):
     click_location = const.QUEST_DONE_OK_BUTTON[const.CLICK_LOCATION_KEY]
     emulator_device.click(click_location[const.X_KEY], click_location[const.Y_KEY])
+    time.sleep(0.5)
 
 
 def quest_loop(emulator):

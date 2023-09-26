@@ -174,7 +174,7 @@ def make_image_black_white(image_path):
 
 
 def get_text_from_image(image_path, config=6):
-    return pytesseract.image_to_string(Image.open(image_path), config=f'--psm {config}').replace("\n", "")
+    return pytesseract.image_to_string(Image.open(image_path), config=f'--psm {config}').replace("\n", "").replace(" ", "").replace("\t", "")
 
 
 def smoother_image(in_img, out_img, radius):
@@ -197,9 +197,15 @@ def get_number_from_image(image_path, config=6, smoother=True):
         return (int(numeric_text[0]) * 60) + int(numeric_text[1])
     elif text == "":
         logger.debug("empty-text to number")
+        if config == 7:
+            return 0
         return get_number_from_image(image_path, config=7, smoother=False)
     else:
-        return int(''.join(filter(str.isdigit, text)))
+        if is_number(text):
+            return int(''.join(filter(str.isdigit, text)))
+        else:
+            logger.error(f"[{image_path}] did not have numbers in it. Exiting APP.")
+            exit(1)
 
 
 def is_in_quest_selection(emulator_device):
@@ -255,7 +261,7 @@ def is_close_ad_present(emulator_device):
 
     text = get_text_from_image(get_cropped_screenshot_path(emulator_device, const.CLOSE_AD_BUTTON[const.NAME_KEY]))
 
-    if "x" in text:
+    if "x" in text or ">" in text or "<" in text or "yy" in text or "»" in text or "«" in text:
         logger.debug(f"[{emulator_device.serial}]: X is in the corner")
         return True
 
@@ -437,17 +443,25 @@ def is_selected_correct_quest(emulator_device, quest_num):
                                    const.QUEST_TIERS_DIFF_THRESHOLD)
 
 
+def is_number(s):
+    try:
+        float(s)  # Attempt to convert the string to a float
+        return True
+    except ValueError:
+        return False
+
+
 def clean_directory(directory_path):
     try:
         # List all files and subdirectories in the directory
-        items = [item for item in os.listdir(directory_path) if item.endswith(".png")]
+        items = [item for item in os.listdir(directory_path)]
 
         # Loop through each item in the directory
         for item in items:
             item_path = os.path.join(directory_path, item)
 
             # Check if it's a file and delete it
-            if os.path.isfile(item_path):
+            if os.path.isfile(item_path) and item.endswith(".png"):
                 os.remove(item_path)
 
             # Check if it's a subdirectory and recursively clean it
