@@ -85,6 +85,8 @@ BEER_TAVERN_BUTTON = new_button("beer-button", new_dimensions(324, 1738, 443, 18
 ACCEPT_QUEST_BUTTON = new_button("accept-quest-button", new_dimensions(353, 1420, 728, 1505), new_location(533, 1450))
 QUEST_DONE_OK_BUTTON = new_button("quest-done-ok-button", new_dimensions(315, 1444, 760, 1603), new_location(536, 1530))
 # ---------------------------------------------
+NEW_LEVEL_OK_BUTTON = new_button("new-level-button", new_dimensions(400, 1450, 700, 1550), new_location(550, 1500))
+
 # QUESTS
 # ----------- NPCS
 TAVERN_MASTER = new_npc("tavern-master", new_dimensions(779, 764, 879, 864), new_location(822, 815))
