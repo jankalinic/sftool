@@ -4,7 +4,6 @@ import adbutils
 import subprocess
 import time
 from PIL import Image, ImageEnhance, ImageFilter
-import pytesseract
 
 from common import constants as const
 from common.custom_logger import logger
@@ -175,23 +174,22 @@ def make_image_black_white(image_path):
     # logger.debug(f"Execution of black and white enhancing: {time.time() - start_time:.6f} seconds")
 
 
-def get_number_textfile_path(emulator_device):
+def get_tesseract_textfile_path(emulator_device):
     return os.path.join(const.NUMBER_TEXTFILE, emulator_device.serial,  "out")
 
 
 def get_text_from_image(emulator_device, image_path, config="--psm 8"):
     # return pytesseract.image_to_string(Image.open(image_path), config=f'--psm {config}')
-    tesseract_command = f"tesseract {image_path} {get_number_textfile_path(emulator_device)} {config} txt"
+    tesseract_command = f"tesseract {image_path} {get_tesseract_textfile_path(emulator_device)} {config} txt"
     subprocess.run(tesseract_command, shell=True, capture_output=True)
 
     result = ""
 
-    with open(get_number_textfile_path(emulator_device) + ".txt", "r") as output_file:
+    with open(get_tesseract_textfile_path(emulator_device) + ".txt", "r") as output_file:
         result = output_file.readline()
 
     if result == "":
-        logger.debug("empty-text to number")
-        exit(1)
+        logger.debug("empty-text")
 
     return result.replace("\n", "").replace("\t", "").replace(" ", "").replace(",", ".")
 
@@ -205,9 +203,9 @@ def text_to_seconds(number_with_doubledot):
     return (int(numbers[0]) * 60) + int(numbers[1])
 
 
-def get_number_from_image(image_path, config="--psm 8 -c tessedit_char_whitelist=0123456789.,:"):
+def get_number_from_image(emulator_device, image_path, config="--psm 8 -c tessedit_char_whitelist=0123456789.,:", tries=0):
     enhance_image_bw(image_path)
-    text = get_text_from_image(get_contrasted_image_path(image_path), config)
+    text = get_text_from_image(emulator_device, get_contrasted_image_path(image_path), config)
 
     if "." in text:
         return float(text)
@@ -217,7 +215,14 @@ def get_number_from_image(image_path, config="--psm 8 -c tessedit_char_whitelist
         if is_number(text):
             return int(''.join(filter(str.isdigit, text)))
         else:
-            logger.error(f"[{image_path}] did not have numbers in it. Exiting APP.")
+            logger.error(f"[{image_path}] did not have numbers in it.")
+            if tries == 0:
+                return get_number_from_image(emulator_device, image_path, config="--psm 8", tries=tries+1)
+            if tries == 1:
+                return get_number_from_image(emulator_device, image_path, config="--psm 7", tries=tries+1)
+            if tries == 2:
+                return get_number_from_image(emulator_device, image_path, config="--psm 6", tries=tries+1)
+
             exit(1)
 
 
@@ -259,6 +264,13 @@ def crop_close_ad(emulator_device):
     crop_screenshot(emulator_device, const.CLOSE_AD_BUTTON[const.DIMENSIONS_KEY], const.CLOSE_AD_BUTTON[const.NAME_KEY])
 
 
+def get_close_ad_text(emulator_device, config_psm=6):
+    text = get_text_from_image(emulator_device, get_contrasted_image_path(get_cropped_screenshot_path(emulator_device, const.CLOSE_AD_BUTTON[const.NAME_KEY])), f"--psm {config_psm}")
+    if text == "" and config_psm < 10:
+        return get_close_ad_text(emulator_device, config_psm=config_psm+1)
+    return text
+
+
 def is_close_ad_present(emulator_device):
     crop_close_ad(emulator_device)
     logger.debug(f"[{emulator_device.serial}]: Looking for AD close button")
@@ -272,7 +284,7 @@ def is_close_ad_present(emulator_device):
 
     enhance_image_bw(get_cropped_screenshot_path(emulator_device, const.CLOSE_AD_BUTTON[const.NAME_KEY]))
 
-    text = get_text_from_image(emulator_device, get_cropped_screenshot_path(emulator_device, const.CLOSE_AD_BUTTON[const.NAME_KEY]), f"--psm 6 -c tessedit_char_whitelist={const.CLOSE_BUTTON_WHITELIST_STRING}")
+    text = get_close_ad_text(emulator_device)
 
     for char in const.CLOSE_BUTTON_WHITELIST_STRING:
         if char in text:
