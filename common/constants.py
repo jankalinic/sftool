@@ -14,7 +14,6 @@ ORIGINAL_QUESTS_DIR_PATH = os.path.join(ORIGINAL_DIR_PATH, "quests")
 ORIGINAL_BUTTON_DIR_PATH = os.path.join(ORIGINAL_DIR_PATH, "buttons")
 # ------
 SCREENSHOT_DIR_PATH = os.path.join(IMAGES_DIR_PATH, "screenshots")
-NUMBER_TEXTFILE = os.path.join(SCREENSHOT_DIR_PATH)
 
 LIST_OF_CLOSEBUTTONS = [file for file in os.listdir(ORIGINAL_ADS_CLOSE_BUTTONS_DIR_PATH) if file.endswith(".png")]
 CLOSE_BUTTON_WHITELIST_STRING = "xyXY><»«"

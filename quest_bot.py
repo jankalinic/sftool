@@ -42,15 +42,15 @@ def select_best_quest(emulator_device):
         util.take_screenshot(emulator_device)
         util.crop_quest_numbers(emulator_device)
 
-        gold = util.get_number_from_image(emulator_device, util.get_cropped_screenshot_path(emulator_device, const.GOLD_DATA[const.NAME_KEY]))
+        gold = util.get_number_from_image(util.get_cropped_screenshot_path(emulator_device, const.GOLD_DATA[const.NAME_KEY]))
         logger.debug(f"[{emulator_device.serial}]: Current gold: {gold}")
         gold_list.append(gold)
 
-        exp = util.get_number_from_image(emulator_device, util.get_cropped_screenshot_path(emulator_device, const.EXP_DATA[const.NAME_KEY]))
+        exp = util.get_number_from_image(util.get_cropped_screenshot_path(emulator_device, const.EXP_DATA[const.NAME_KEY]))
         logger.debug(f"[{emulator_device.serial}]: Current exp: {exp}")
         exp_list.append(exp)
 
-        time_seconds = util.get_number_from_image(emulator_device, util.get_cropped_screenshot_path(emulator_device, const.TIME_DATA[const.NAME_KEY]))
+        time_seconds = util.get_number_from_image(util.get_cropped_screenshot_path(emulator_device, const.TIME_DATA[const.NAME_KEY]))
         logger.debug(f"[{emulator_device.serial}]: Current time: {time_seconds}")
         time_list.append(time_seconds)
 
@@ -60,9 +60,9 @@ def select_best_quest(emulator_device):
     start_quest(emulator_device, pick_quest_num)
 
 
-def open_tavern_master_menu(emualator_device):
+def open_tavern_master_menu(emulator_device):
     click_location = const.TAVERN_MASTER[const.CLICK_LOCATION_KEY]
-    emualator_device.click(click_location[const.X_KEY], click_location[const.Y_KEY])
+    emulator_device.click(click_location[const.X_KEY], click_location[const.Y_KEY])
     time.sleep(0.5)
 
 

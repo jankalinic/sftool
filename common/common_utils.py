@@ -174,22 +174,16 @@ def make_image_black_white(image_path):
     # logger.debug(f"Execution of black and white enhancing: {time.time() - start_time:.6f} seconds")
 
 
-def get_tesseract_textfile_path(emulator_device):
-    return os.path.join(const.NUMBER_TEXTFILE, emulator_device.serial,  "out")
+def remove_extension(image_path):
+    return image_path.split(const.IMAGE_EXTENSION)[0]
 
 
-def get_text_from_image(emulator_device, image_path, config="--psm 8"):
-    # return pytesseract.image_to_string(Image.open(image_path), config=f'--psm {config}')
-    tesseract_command = f"tesseract {image_path} {get_tesseract_textfile_path(emulator_device)} {config} txt"
-    subprocess.run(tesseract_command, shell=True, capture_output=True)
-
-    result = ""
-
-    with open(get_tesseract_textfile_path(emulator_device) + ".txt", "r") as output_file:
-        result = output_file.readline()
+def get_text_from_image(image_path, config="--psm 8"):
+    tesseract_command = f"tesseract {image_path} stdout {config}"
+    result = str(subprocess.run(tesseract_command, shell=True, capture_output=True).stdout.decode())
 
     if result == "":
-        logger.debug("empty-text")
+        logger.debug(f"No text found in {image_path}")
 
     return result.replace("\n", "").replace("\t", "").replace(" ", "").replace(",", ".")
 
@@ -203,9 +197,9 @@ def text_to_seconds(number_with_doubledot):
     return (int(numbers[0]) * 60) + int(numbers[1])
 
 
-def get_number_from_image(emulator_device, image_path, config="--psm 8 -c tessedit_char_whitelist=0123456789.,:", tries=0):
+def get_number_from_image(image_path, config="--psm {} -c tessedit_char_whitelist=0123456789.,:", psm=6):
     enhance_image_bw(image_path)
-    text = get_text_from_image(emulator_device, get_contrasted_image_path(image_path), config)
+    text = get_text_from_image(get_contrasted_image_path(image_path), config.format(psm))
 
     if "." in text:
         return float(text)
@@ -215,14 +209,9 @@ def get_number_from_image(emulator_device, image_path, config="--psm 8 -c tessed
         if is_number(text):
             return int(''.join(filter(str.isdigit, text)))
         else:
-            logger.error(f"[{image_path}] did not have numbers in it.")
-            if tries == 0:
-                return get_number_from_image(emulator_device, image_path, config="--psm 8", tries=tries+1)
-            if tries == 1:
-                return get_number_from_image(emulator_device, image_path, config="--psm 7", tries=tries+1)
-            if tries == 2:
-                return get_number_from_image(emulator_device, image_path, config="--psm 6", tries=tries+1)
-
+            logger.error(f"[{image_path}] did not have numbers in it with config {config}")
+            if psm < 10:
+                return get_number_from_image(image_path, config=f"--psm {psm}", psm=psm+1)
             exit(1)
 
 
@@ -265,7 +254,7 @@ def crop_close_ad(emulator_device):
 
 
 def get_close_ad_text(emulator_device, config_psm=6):
-    text = get_text_from_image(emulator_device, get_contrasted_image_path(get_cropped_screenshot_path(emulator_device, const.CLOSE_AD_BUTTON[const.NAME_KEY])), f"--psm {config_psm}")
+    text = get_text_from_image(get_contrasted_image_path(get_cropped_screenshot_path(emulator_device, const.CLOSE_AD_BUTTON[const.NAME_KEY])), f"--psm {config_psm}")
     if text == "" and config_psm < 10:
         return get_close_ad_text(emulator_device, config_psm=config_psm+1)
     return text
