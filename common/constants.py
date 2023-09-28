@@ -22,6 +22,7 @@ OFFLINE = "offline"
 NPC_SUFFIX = "npc"
 CROPPED_SUFFIX = "cropped"
 SCREENSHOT_SUFFIX = "screenshot"
+RESIZE_RATIO = 3
 # ------ THRESHOLDS
 QUEST_PROGRESS_BAR_DIFF_THRESHOLD = 0.2
 MENU_BUTTON_IMAGE_DIFF_THRESHOLD = 0.1
@@ -32,7 +33,7 @@ QUEST_TIERS_DIFF_THRESHOLD = 0.02
 NPC_THRESHOLD = 0.05
 WALLPAPER_THRESHOLD = 0.01
 NEW_LEVEL_THRESHOLD = 0.05
-POLARIZE_THRESHOLD = 100
+POLARIZE_THRESHOLD = 80
 # ------ DICT KEYS
 NAME_KEY = "name"
 DIMENSIONS_KEY = "dimensions"
@@ -90,8 +91,9 @@ ACCEPT_QUEST_BUTTON = new_button("accept-quest-button", new_dimensions(353, 1420
 QUEST_DONE_OK_BUTTON = new_button("quest-done-ok-button", new_dimensions(315, 1444, 760, 1603), new_location(536, 1530))
 # ---------------------------------------------
 NEW_LEVEL_OK_BUTTON = new_button("new-level-button", new_dimensions(400, 1450, 700, 1550), new_location(550, 1500))
-
+# -----------------------
 WALLPAPER_DATA = new_button("wallpaper", new_dimensions(200, 200, 800, 800), new_location(0, 0))
+PROFILE_BUTTON = new_button("profile-button", new_dimensions(0, 0, 155, 155), new_location(530, 995))
 
 # QUESTS
 # ----------- NPCS
