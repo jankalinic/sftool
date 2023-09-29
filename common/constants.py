@@ -22,7 +22,9 @@ OFFLINE = "offline"
 NPC_SUFFIX = "npc"
 CROPPED_SUFFIX = "cropped"
 SCREENSHOT_SUFFIX = "screenshot"
-RESIZE_RATIO = 3
+RESIZE_RATIO = 4
+AVERAGE_EXP_PER_SEGMENT = 10000
+
 # ------ THRESHOLDS
 QUEST_PROGRESS_BAR_DIFF_THRESHOLD = 0.2
 MENU_BUTTON_IMAGE_DIFF_THRESHOLD = 0.1
@@ -81,7 +83,7 @@ def new_button(name, dimensions, click_location):
 # BUTTONS
 # ----- ADS
 AD_BUTTON = new_button("ad", new_dimensions(110, 180, 275, 360), new_location(188, 277))
-CLOSE_AD_BUTTON = new_button("close-ad", new_dimensions(980, 0, 1080, 100), new_location(1013, 55))
+CLOSE_AD_BUTTON = new_button("close-ad", new_dimensions(950, 0, 1080, 150), new_location(1013, 55))
 DONT_CLOSE_AD_BUTTON = new_button("dont-close-button", new_dimensions(980, 0, 1080, 100), new_location(0, 0))
 # ----- BEER
 DRINK_BEER_MUSHROOM_BUTTON = new_button("beer-mushroom-button", new_dimensions(578, 1425, 672, 1515), new_location(624, 1462))
@@ -97,7 +99,7 @@ PROFILE_BUTTON = new_button("profile-button", new_dimensions(0, 0, 155, 155), ne
 
 # QUESTS
 # ----------- NPCS
-TAVERN_MASTER = new_npc("tavern-master", new_dimensions(779, 764, 879, 864), new_location(822, 815))
+TAVERN_MASTER = new_npc("tavern-master2", new_dimensions(779, 764, 879, 864), new_location(822, 815))
 # ------
 DRUNKEN_GUY = new_npc("drunken-guy", new_dimensions(465, 946, 624, 1154), new_location(536, 1530))
 PRINCE_CHARMING = new_npc("prince-charming", new_dimensions(188, 1050, 355, 1175), new_location(264, 1122))

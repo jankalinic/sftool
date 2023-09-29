@@ -27,7 +27,7 @@ def start_quest(emulator_device, quest_num):
 
 
 def select_best_quest(emulator_device):
-    logger.debug(f"[{util.get_emulator_and_adv_name(emulator_device)}]: Choosing best quest")
+    logger.debug(f"{util.get_emulator_and_adv_name(emulator_device)}: Choosing best quest")
     # check stats for first quest
     gold_list = []
     exp_list = []
@@ -44,15 +44,15 @@ def select_best_quest(emulator_device):
         util.crop_quest_numbers(emulator_device)
 
         gold = util.get_number_from_image(util.get_cropped_screenshot_path(emulator_device, const.GOLD_DATA[const.NAME_KEY]))
-        logger.debug(f"[{util.get_emulator_and_adv_name(emulator_device)}]: Current gold: {gold}")
+        logger.debug(f"{util.get_emulator_and_adv_name(emulator_device)}: Current gold: {gold}")
         gold_list.append(gold)
 
         exp = util.get_number_from_image(util.get_cropped_screenshot_path(emulator_device, const.EXP_DATA[const.NAME_KEY]))
-        logger.debug(f"[{util.get_emulator_and_adv_name(emulator_device)}]: Current exp: {exp}")
+        logger.debug(f"{util.get_emulator_and_adv_name(emulator_device)}: Current exp: {exp}")
         exp_list.append(exp)
 
         time_seconds = util.get_number_from_image(util.get_cropped_screenshot_path(emulator_device, const.TIME_DATA[const.NAME_KEY]))
-        logger.debug(f"[{util.get_emulator_and_adv_name(emulator_device)}]: Current time: {time_seconds}")
+        logger.debug(f"{util.get_emulator_and_adv_name(emulator_device)}: Current time: {time_seconds}")
         time_list.append(time_seconds)
 
     # TODO: Jirka logic to pick which quest is the best
@@ -96,8 +96,10 @@ def quest_loop(emulator):
                             util.skip_quest_with_ad(emulator)
                         elif util.is_quest_done(emulator):
                             util.exit_done_quest(emulator)
+                        elif util.is_ad_present(emulator):
+                            util.watch_ad_and_close_after(emulator)
                         else:
-                            logger.debug(f"{util.get_emulator_and_adv_name(emulator)}: is still in quest, cannot skip, lets wait 20s")
+                            logger.debug(f"{util.get_emulator_and_adv_name(emulator)}: is still in quest, cannot skip, waiting")
                             time.sleep(20)
                             continue
                     elif util.is_close_ad_present(emulator):

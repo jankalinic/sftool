@@ -64,7 +64,7 @@ def check_cli_tools_installed():
         else:
             raise Exception
     except Exception:
-        logger.warning("Convert is not installed. Please install")
+        logger.warning("Convert is not installed. Please install brew install imagemagick")
         exit(1)
 
 
@@ -147,16 +147,22 @@ def text_to_seconds(number_with_doubledot):
     return (int(numbers[0]) * 60) + int(numbers[1])
 
 
-def get_number_from_image(image_path, config="--psm {} -c tessedit_char_whitelist=0123456789,:", psm=8):
-    enhance_number_image(image_path)
-    text = get_text_from_image(get_enhanced_image_path(image_path), config.format(psm))
-
-    if text == "":
-        logger.error(f"[{image_path}] did not have text {config}")
-        if psm < 8:
-            return get_number_from_image(image_path, config=config, psm=psm+1)
-        logger.error(f"[{image_path}] did not have text after ALL configs {config}")
-        exit(1)
+def get_number_from_image(image_path, config="--psm {} -c tessedit_char_whitelist=0123456789,:", psm=8, tries=0):
+    if tries == 0:
+        enhance_image_bw(image_path)
+        enhance_number_image(image_path)
+        text = get_text_from_image(get_enhanced_image_path(image_path), config.format(psm))
+        if text == "" or len(text) == 1:
+            get_number_from_image(image_path, tries=tries+1)
+    if tries == 1:
+        text = get_text_from_image(get_contrasted_image_path(image_path), config.format(psm))
+        if text == "" or len(text) == 1:
+            get_number_from_image(image_path, tries=tries+1)
+    if tries == 2:
+        text = get_text_from_image(image_path, config.format(psm))
+        if text == "" or len(text) == 1:
+            logger.error(f"[{image_path}] did not have text {config}")
+            exit(1)
 
     # sometimes text contains dot at the end
     if text[-1] == ".":
@@ -172,11 +178,10 @@ def get_number_from_image(image_path, config="--psm {} -c tessedit_char_whitelis
         exit(1)
 
 
-def get_close_ad_text(emulator_device, config_psm=6):
-    text = get_text_from_image(get_contrasted_image_path(get_cropped_screenshot_path(emulator_device, const.CLOSE_AD_BUTTON[const.NAME_KEY])),
-        f"--psm {config_psm}")
-    if text == "" and config_psm < 10:
-        return get_close_ad_text(emulator_device, config_psm=config_psm + 1)
+def get_close_ad_text(emulator_device, config_psm=8):
+    enhance_image_bw(get_cropped_screenshot_path(emulator_device, const.CLOSE_AD_BUTTON[const.NAME_KEY]), 150)
+    text = get_text_from_image(get_cropped_screenshot_path(emulator_device, const.CLOSE_AD_BUTTON[const.NAME_KEY]), f"--psm {config_psm}")
+
     return text
 
 
@@ -298,7 +303,6 @@ def is_close_ad_present(emulator_device):
         return False
 
     # Continue searching corner using text => ad close should contain X text
-    enhance_image_bw(get_cropped_screenshot_path(emulator_device, const.CLOSE_AD_BUTTON[const.NAME_KEY]))
     text = get_close_ad_text(emulator_device)
 
     # Search for chars that are acceptable as detected X
@@ -307,8 +311,7 @@ def is_close_ad_present(emulator_device):
             logger.debug(f"{get_emulator_and_adv_name(emulator_device)}: close ad found by char: {char}")
             return True
 
-    logger.debug(
-        f"{get_emulator_and_adv_name(emulator_device)}: X in ad not found as a text, checking for saved images of close ad buttons")
+    logger.debug(f"{get_emulator_and_adv_name(emulator_device)}: X in ad not found as a text, checking for saved images of close ad buttons")
 
     for image in const.LIST_OF_CLOSEBUTTONS:
         if are_images_similar(emulator_device,
@@ -428,6 +431,19 @@ def is_in_profile_selection(emulator_device):
     logger.debug(f"{get_emulator_and_adv_name(emulator_device)}: Is {'' if is_it else 'not'} in profile select")
     return is_it
 
+
+def crop_ad(emulator_device):
+    crop_screenshot(emulator_device, const.AD_BUTTON[const.DIMENSIONS_KEY], const.AD_BUTTON[const.NAME_KEY])
+
+def is_ad_present(emulator_device):
+    crop_ad(emulator_device)
+    logger.debug(f"[{emulator_device.serial}]: Looking for AD")
+    return are_images_similar(emulator_device,
+                                   get_cropped_screenshot_path(emulator_device, const.AD_BUTTON[const.NAME_KEY]),
+                                   const.AD_BUTTON[const.PATH_KEY],
+                                   const.TV_IMAGE_DIFF_THRESHOLD)
+
+
 # END QUEST DECISIONS
 # ------------------
 
@@ -493,14 +509,13 @@ def enhance_image_bw(image_path, threshold=const.POLARIZE_THRESHOLD):
     image = image.resize((image.width * const.RESIZE_RATIO, image.height * const.RESIZE_RATIO))
     image = image.convert('L')
     image = image.point(lambda x: 0 if x < threshold else 255, '1')
-    image = image.convert('L').filter(ImageFilter.MedianFilter(size=15))
+    image = image.convert('L').filter(ImageFilter.MedianFilter(size=9))
     # image = image.filter(ImageFilter.GaussianBlur(radius=0.5))
     image.save(get_contrasted_image_path(image_path))
     time.sleep(0.5)
 
 
 def enhance_number_image(in_image_path):
-    enhance_image_bw(in_image_path)
 
     image = cv2.imread(get_contrasted_image_path(in_image_path))
     # Apply Canny edge detection
@@ -550,7 +565,7 @@ def enhance_number_image(in_image_path):
 
 # ----------------------
 # GAME ACTIONS
-def go_to_tavern_using_key(emulator_device):
+def go_to_tavern_using_key(emulator_device, must_be_in_tavern=True):
     logger.debug(f"{get_emulator_and_adv_name(emulator_device)}: Pressing 'a and t' to return to tavern")
 
     # first leave the tavern to exit without clicking on close and then go back using t
@@ -564,7 +579,7 @@ def go_to_tavern_using_key(emulator_device):
 
     take_screenshot(emulator_device)
 
-    if not is_in_tavern(emulator_device):
+    if not is_in_tavern(emulator_device) and must_be_in_tavern:
         logger.debug(f"{get_emulator_and_adv_name(emulator_device)}: Pressing 't' did not work")
         go_to_tavern_using_key(emulator_device)
 
@@ -584,7 +599,6 @@ def close_ad(emulator_device):
 def close_ad_if_playing(emulator_device):
     logger.debug(f"{get_emulator_and_adv_name(emulator_device)}: close ad if playing")
     take_screenshot(emulator_device)
-    crop_close_ad(emulator_device)
 
     if is_close_ad_present(emulator_device):
         close_ad(emulator_device)
@@ -636,7 +650,8 @@ def exit_done_quest(emulator_device):
 
 def accept_new_level(emulator_device):
     logger.debug(f"{get_emulator_and_adv_name(emulator_device)}: accepting new level")
-    emulator_device.click(const.NEW_LEVEL_OK_BUTTON[const.CLICK_LOCATION_KEY])
+    click_location = const.NEW_LEVEL_OK_BUTTON[const.CLICK_LOCATION_KEY]
+    emulator_device.click(click_location[const.X_KEY], click_location[const.Y_KEY])
 
 
 def login_and_go_to_tavern(emulator_device):
@@ -646,9 +661,20 @@ def login_and_go_to_tavern(emulator_device):
     click_location = const.PROFILE_BUTTON[const.CLICK_LOCATION_KEY]
     emulator_device.click(click_location[const.X_KEY], click_location[const.Y_KEY])
 
-    time.sleep(5)
-    go_to_tavern_using_key(emulator_device)
+    time.sleep(3)
+    go_to_tavern_using_key(emulator_device, must_be_in_tavern=False)
 
+
+def click_on_ad(emulator_device):
+    logger.debug(f"[{emulator_device.serial}]: clicking AD")
+    ad_click_location = const.AD_BUTTON[const.CLICK_LOCATION_KEY]
+    emulator_device.click(ad_click_location[const.X_KEY], ad_click_location[const.Y_KEY])
+
+
+def watch_ad_and_close_after(emulator_device):
+    click_on_ad(emulator_device)
+    time.sleep(1)
+    close_ad_if_playing(emulator_device)
 
 # END GAME ACTIONS
 # ----------------------
