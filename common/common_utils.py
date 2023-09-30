@@ -4,7 +4,7 @@ import adbutils
 import subprocess
 import time
 import re
-from PIL import Image, ImageFilter
+from PIL import Image, ImageFilter, ImageEnhance, ImageOps
 
 from common import constants as const
 from common.custom_logger import logger
@@ -147,39 +147,35 @@ def text_to_seconds(number_with_doubledot):
     return (int(numbers[0]) * 60) + int(numbers[1])
 
 
-def get_number_from_image(image_path, config="--psm {} -c tessedit_char_whitelist=0123456789,:", psm=8, tries=0):
-    if tries == 0:
-        enhance_image_bw(image_path)
-        enhance_number_image(image_path)
-        text = get_text_from_image(get_enhanced_image_path(image_path), config.format(psm))
-        if text == "" or len(text) == 1:
-            get_number_from_image(image_path, tries=tries+1)
-    if tries == 1:
-        text = get_text_from_image(get_contrasted_image_path(image_path), config.format(psm))
-        if text == "" or len(text) == 1:
-            get_number_from_image(image_path, tries=tries+1)
-    if tries == 2:
-        text = get_text_from_image(image_path, config.format(psm))
-        if text == "" or len(text) == 1:
-            logger.error(f"[{image_path}] did not have text {config}")
-            exit(1)
+def get_number_from_image(image_path):
+    enhance_contrast(image_path, get_contrasted_image_path(image_path))
+    enhance_number_image(get_contrasted_image_path(image_path), get_enhanced_image_path(image_path))
 
-    # sometimes text contains dot at the end
-    if text[-1] == ".":
-        text = text[:-1]
+    image_paths = [get_enhanced_image_path(image_path), get_contrasted_image_path(image_path)]
+    for image_pth in image_paths:
+        for psm_try in range(3, 9):
+            text = get_text_from_image(image_pth, f"--psm {psm_try} -c tessedit_char_whitelist=0123456789,:")
+            # sometimes text contains dot at the end
+            if text != "" and len(text) > 1:
+                if text[-1] == ".":
+                    text = text[:-1]
 
-    if "." in text:
-        return float(re.match(r'(?P<decimal>\d+\.\d+)', text).group('decimal'))
-    elif ":" in text:
-        return text_to_seconds(text)
-    elif is_number(text):
-        return int(''.join(filter(str.isdigit, text)))
-    else:
-        exit(1)
+                if "." in text:
+                    return float(re.match(r'(?P<decimal>\d+\.\d+)', text).group('decimal'))
+                elif ":" in text:
+                    return text_to_seconds(text)
+                elif is_number(text):
+                    return int(''.join(filter(str.isdigit, text)))
+                else:
+                    logger.debug(f"{text}")
+                    exit(1)
+
+    exit(1)
 
 
 def get_close_ad_text(emulator_device, config_psm=8):
-    enhance_image_bw(get_cropped_screenshot_path(emulator_device, const.CLOSE_AD_BUTTON[const.NAME_KEY]), 150)
+    image_path = get_cropped_screenshot_path(emulator_device, const.CLOSE_AD_BUTTON[const.NAME_KEY])
+    enhance_contrast(get_contrasted_image_path(image_path),get_enhanced_image_path(image_path))
     text = get_text_from_image(get_cropped_screenshot_path(emulator_device, const.CLOSE_AD_BUTTON[const.NAME_KEY]), f"--psm {config_psm}")
 
     return text
@@ -303,13 +299,13 @@ def is_close_ad_present(emulator_device):
         return False
 
     # Continue searching corner using text => ad close should contain X text
-    text = get_close_ad_text(emulator_device)
-
-    # Search for chars that are acceptable as detected X
-    for char in const.CLOSE_BUTTON_WHITELIST_STRING:
-        if char in text:
-            logger.debug(f"{get_emulator_and_adv_name(emulator_device)}: close ad found by char: {char}")
-            return True
+    for psm in range(3, 9):
+        text = get_close_ad_text(emulator_device, psm)
+        # Search for chars that are acceptable as detected X
+        for char in const.CLOSE_BUTTON_WHITELIST_STRING:
+            if char in text:
+                logger.debug(f"{get_emulator_and_adv_name(emulator_device)}: close ad found by char: {char}")
+                return True
 
     logger.debug(f"{get_emulator_and_adv_name(emulator_device)}: X in ad not found as a text, checking for saved images of close ad buttons")
 
@@ -363,25 +359,38 @@ def is_enough_thirst(emulator_device):
 
 def crop_quest_ad(emulator_device):
     crop_screenshot(emulator_device, const.QUEST_AD[const.DIMENSIONS_KEY], const.QUEST_AD[const.NAME_KEY])
+
+
+def crop_quest_ad_wo_hourglass(emulator_device):
     crop_screenshot(emulator_device, const.QUEST_AD_WO_HOURGLASS[const.DIMENSIONS_KEY],
                     const.QUEST_AD_WO_HOURGLASS[const.NAME_KEY])
 
 
-def is_quest_skipable_with_ad(emulator_device):
-    crop_quest_ad(emulator_device)
-
+def is_quest_ad_wo_hourglass_present(emulator_device):
+    crop_quest_ad_wo_hourglass(emulator_device)
     is_it = are_images_similar(emulator_device,
-                               get_cropped_screenshot_path(emulator_device, const.QUEST_AD[const.NAME_KEY]),
-                               const.QUEST_AD[const.PATH_KEY],
-                               const.MENU_BUTTON_IMAGE_DIFF_THRESHOLD) or \
-            are_images_similar(emulator_device,
                                get_cropped_screenshot_path(emulator_device,
                                                            const.QUEST_AD_WO_HOURGLASS[const.NAME_KEY]),
                                const.QUEST_AD_WO_HOURGLASS[const.PATH_KEY],
                                const.MENU_BUTTON_IMAGE_DIFF_THRESHOLD)
 
-    logger.debug(f"{get_emulator_and_adv_name(emulator_device)}: Quest is {'' if is_it else 'NOT'} skippable with free ad")
+    logger.debug(f"{get_emulator_and_adv_name(emulator_device)}: Quest ad is with{'out' if is_it else ''} hourglass")
     return is_it
+
+
+def is_quest_ad_present(emulator_device):
+    crop_quest_ad(emulator_device)
+    is_it = are_images_similar(emulator_device,
+                               get_cropped_screenshot_path(emulator_device, const.QUEST_AD[const.NAME_KEY]),
+                               const.QUEST_AD[const.PATH_KEY],
+                               const.MENU_BUTTON_IMAGE_DIFF_THRESHOLD)
+    logger.debug(f"{get_emulator_and_adv_name(emulator_device)}: Quest is {'' if is_it else 'NOT'} skippable with free ad")
+
+    return is_it
+
+
+def is_quest_skipable_with_ad(emulator_device):
+    return is_quest_ad_present(emulator_device) or is_quest_ad_wo_hourglass_present(emulator_device)
 
 
 def crop_quest_done(emulator_device):
@@ -504,19 +513,37 @@ def get_enhanced_image_path(image_path):
 
 # ----------------------
 # Enhance images
-def enhance_image_bw(image_path, threshold=const.POLARIZE_THRESHOLD):
-    image = Image.open(image_path)
-    image = image.resize((image.width * const.RESIZE_RATIO, image.height * const.RESIZE_RATIO))
-    image = image.convert('L')
-    image = image.point(lambda x: 0 if x < threshold else 255, '1')
-    image = image.convert('L').filter(ImageFilter.MedianFilter(size=9))
-    # image = image.filter(ImageFilter.GaussianBlur(radius=0.5))
-    image.save(get_contrasted_image_path(image_path))
+def enhance_contrast(input_path, output_path, threshold=const.POLARIZE_THRESHOLD):
+    image = Image.open(input_path)
+    image = image.resize((image.width * const.RESIZE_RATIO, image.height * const.RESIZE_RATIO)).convert('L')
+    image = ImageEnhance.Contrast(image).enhance(5)\
+                                        .point(lambda x: 0 if x < threshold else 255, '1')\
+                                        .convert('L')\
+                                        .filter(ImageFilter.MedianFilter(size=3))
+
+    image = ImageOps.invert(image)
+    image.save(output_path)
     time.sleep(0.5)
 
 
-def enhance_number_image(in_image_path):
+def enhance_number_image(input_path, output_path):
+    pnm_path = input_path.split(const.IMAGE_EXTENSION)[0] + ".pnm"
+    svg_path = input_path.split(const.IMAGE_EXTENSION)[0] + ".svg"
+    # first convert png to pnm
+    convert_pnm_command = f"convert {input_path} {pnm_path}"
+    subprocess.run(convert_pnm_command, shell=True, check=True)
 
+    time.sleep(0.2)
+
+    convert_sv_command = f"potracer {pnm_path} -b svg -o {svg_path}"
+    subprocess.run(convert_sv_command, shell=True, check=True)
+    time.sleep(0.2)
+
+    convert_png_command = f"cairosvg {svg_path} -o {output_path}"
+    subprocess.run(convert_png_command, shell=True, check=True)
+
+
+def crop_number_image(in_image_path):
     image = cv2.imread(get_contrasted_image_path(in_image_path))
     # Apply Canny edge detection
     edges = cv2.Canny(image, threshold1=30, threshold2=100)
@@ -558,7 +585,6 @@ def enhance_number_image(in_image_path):
     crop_image(get_contrasted_image_path(in_image_path), get_enhanced_image_path(in_image_path), new_size)
 
 
-
 # END Enhance images
 # ----------------------
 
@@ -593,7 +619,7 @@ def click_exit_ad(emulator_device):
 def close_ad(emulator_device):
     logger.debug(f"{get_emulator_and_adv_name(emulator_device)}: closing ad")
     click_exit_ad(emulator_device)
-    time.sleep(2)
+    time.sleep(1)
 
 
 def close_ad_if_playing(emulator_device):
@@ -633,12 +659,32 @@ def open_quest_from_npc(emulator_device):
             break
 
 
-def skip_quest_with_ad(emulator_device):
-    logger.error(f"{get_emulator_and_adv_name(emulator_device)}: Skipping quest using Ad.")
+def click_on_quest_ad(emulator_device):
     ad_location = const.QUEST_AD[const.CLICK_LOCATION_KEY]
     emulator_device.click(ad_location[const.X_KEY], ad_location[const.Y_KEY])
+
+
+def skip_quest_with_ad(emulator_device):
+    logger.error(f"{get_emulator_and_adv_name(emulator_device)}: Skipping quest using Ad.")
+    click_on_quest_ad(emulator_device)
     time.sleep(5)
     close_ad_if_playing(emulator_device)
+
+
+def click_on_quest_ad_until_its_available(emulator_device, tries=50):
+    for x in range(tries):
+        logger.error(f"{get_emulator_and_adv_name(emulator_device)}: Clicking quest ad times:{x}.")
+        click_on_quest_ad(emulator_device)
+        time.sleep(0.5)
+
+        take_screenshot(emulator_device)
+        crop_quest_ad(emulator_device)
+
+        if is_quest_ad_present(emulator_device):
+            skip_quest_with_ad(emulator_device)
+            break
+        elif x > tries:
+            break
 
 
 def exit_done_quest(emulator_device):
@@ -673,7 +719,7 @@ def click_on_ad(emulator_device):
 
 def watch_ad_and_close_after(emulator_device):
     click_on_ad(emulator_device)
-    time.sleep(1)
+    time.sleep(10)
     close_ad_if_playing(emulator_device)
 
 # END GAME ACTIONS

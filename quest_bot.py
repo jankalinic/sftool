@@ -92,8 +92,10 @@ def quest_loop(emulator):
                                 logger.error(f"[{util.get_emulator_and_adv_name(emulator)}]: cannot do more quest. Terminating bot.")
                                 break
                     elif util.is_in_quest(emulator):
-                        if util.is_quest_skipable_with_ad(emulator):
+                        if util.is_quest_ad_present(emulator):
                             util.skip_quest_with_ad(emulator)
+                        elif util.is_quest_ad_wo_hourglass_present(emulator):
+                            util.click_on_quest_ad_until_its_available(emulator)
                         elif util.is_quest_done(emulator):
                             util.exit_done_quest(emulator)
                         elif util.is_ad_present(emulator):
@@ -138,7 +140,7 @@ if __name__ == '__main__':
 
     thread_list = []
 
-    if len(emulator_device_list) == 0 or (len(emulator_device_list) == 1 and emulator_device_list[0].debug == "offline"):
+    if len(emulator_device_list) == 0 or (len(emulator_device_list) == 1 and emulator_device_list[0].info[const.STATE_KEY] == "offline"):
         logger.error("No running emulators, exiting now.")
         exit(1)
 
