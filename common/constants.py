@@ -24,6 +24,7 @@ CROPPED_SUFFIX = "cropped"
 SCREENSHOT_SUFFIX = "screenshot"
 RESIZE_RATIO = 4
 AVERAGE_EXP_PER_SEGMENT = 10000
+PSM_CONFIG = [13, 3, 4, 5, 6, 7, 8]
 
 # ------ THRESHOLDS
 QUEST_PROGRESS_BAR_DIFF_THRESHOLD = 0.2
@@ -83,7 +84,10 @@ def new_button(name, dimensions, click_location):
 # BUTTONS
 # ----- ADS
 AD_BUTTON = new_button("ad", new_dimensions(110, 180, 275, 360), new_location(188, 277))
-CLOSE_AD_BUTTON = new_button("close-ad", new_dimensions(950, 0, 1080, 150), new_location(1013, 55))
+CLOSE_AD_BUTTON = new_button("close-ad", new_dimensions(0, 0, 130, 150), new_location(1013, 55))
+REVERSED_CLOSE_AD_BUTTON = new_button("reversed-close-ad", new_dimensions(950, 0, 1080, 150), new_location(55, 65))
+GOOGLE_CLOSE_AD_BUTTON = new_button("google-close-ad", new_dimensions(943, 386, 1028, 459), new_location(989, 428))
+
 DONT_CLOSE_AD_BUTTON = new_button("dont-close-button", new_dimensions(980, 0, 1080, 100), new_location(0, 0))
 # ----- BEER
 DRINK_BEER_MUSHROOM_BUTTON = new_button("beer-mushroom-button", new_dimensions(578, 1425, 672, 1515), new_location(624, 1462))

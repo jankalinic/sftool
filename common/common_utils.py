@@ -40,8 +40,8 @@ def clean_directory(directory_path):
         logger.error(f"An error occurred while cleaning the directory: {e}")
 
 
-def clean_screenshots():
-    clean_directory(const.SCREENSHOT_DIR_PATH)
+def clean_screenshots(emulator_device):
+    clean_directory(os.path.join(const.SCREENSHOT_DIR_PATH, emulator_device.serial))
 
 
 def check_cli_tools_installed():
@@ -132,6 +132,7 @@ def are_images_similar(emulator_device, first_image, second_image, threshold):
 # --------------------------
 # OCR UTILS
 def get_text_from_image(image_path, config="--psm 8"):
+    image = Image.open(image_path)
     tesseract_command = f"tesseract {image_path} stdout {config}"
     result = str(subprocess.run(tesseract_command, shell=True, capture_output=True).stdout.decode())
     result = result.replace("\n", "").replace("\t", "").replace(" ", "").replace(",", ".")
@@ -153,7 +154,7 @@ def get_number_from_image(image_path):
 
     image_paths = [get_enhanced_image_path(image_path), get_contrasted_image_path(image_path)]
     for image_pth in image_paths:
-        for psm_try in range(3, 9):
+        for psm_try in const.PSM_CONFIG:
             text = get_text_from_image(image_pth, f"--psm {psm_try} -c tessedit_char_whitelist=0123456789,:")
             # sometimes text contains dot at the end
             if text != "" and len(text) > 1:
@@ -173,10 +174,11 @@ def get_number_from_image(image_path):
     exit(1)
 
 
-def get_close_ad_text(emulator_device, config_psm=8):
-    image_path = get_cropped_screenshot_path(emulator_device, const.CLOSE_AD_BUTTON[const.NAME_KEY])
-    enhance_contrast(get_contrasted_image_path(image_path),get_enhanced_image_path(image_path))
-    text = get_text_from_image(get_cropped_screenshot_path(emulator_device, const.CLOSE_AD_BUTTON[const.NAME_KEY]), f"--psm {config_psm}")
+def get_close_ad_text(emulator_device, image_path, config_psm=8):
+    enhance_contrast(image_path, get_contrasted_image_path(image_path))
+    enhance_number_image(get_contrasted_image_path(image_path), get_enhanced_image_path(image_path))
+
+    text = get_text_from_image(get_enhanced_image_path(image_path), f"--psm {config_psm}")
 
     return text
 
@@ -282,11 +284,44 @@ def crop_close_ad(emulator_device):
     crop_screenshot(emulator_device, const.CLOSE_AD_BUTTON[const.DIMENSIONS_KEY], const.CLOSE_AD_BUTTON[const.NAME_KEY])
 
 
+def crop_reversed_close_ad(emulator_device):
+    crop_screenshot(emulator_device, const.REVERSED_CLOSE_AD_BUTTON[const.DIMENSIONS_KEY], const.REVERSED_CLOSE_AD_BUTTON[const.NAME_KEY])
+
+
+def crop_google_close_ad(emulator_device):
+    crop_screenshot(emulator_device, const.GOOGLE_CLOSE_AD_BUTTON[const.DIMENSIONS_KEY], const.GOOGLE_CLOSE_AD_BUTTON[const.NAME_KEY])
+
+
+
 def is_dont_close_ad_button_present(emulator_device):
     return are_images_similar(emulator_device,
                        get_cropped_screenshot_path(emulator_device, const.CLOSE_AD_BUTTON[const.NAME_KEY]),
                        const.DONT_CLOSE_AD_BUTTON[const.PATH_KEY],
                        const.CLOSE_AD_DIFF_THRESHOLD)
+
+
+def is_close_ad_text_present(emulator_device, image_path):
+    # Continue searching corner using text => ad close should contain X text
+    for psm in const.PSM_CONFIG:
+        text = get_close_ad_text(emulator_device, image_path, psm)
+        # Search for chars that are acceptable as detected X
+        for char in const.CLOSE_BUTTON_WHITELIST_STRING:
+            if char in text:
+                logger.debug(f"{get_emulator_and_adv_name(emulator_device)}: close ad found by char: {char}")
+                return True
+
+    logger.debug(
+        f"{get_emulator_and_adv_name(emulator_device)}: X in ad not found as a text, checking for saved images of close ad buttons")
+
+    for image in const.LIST_OF_CLOSEBUTTONS:
+        if are_images_similar(emulator_device,
+                              image_path,
+                              os.path.join(const.ORIGINAL_ADS_CLOSE_BUTTONS_DIR_PATH, image),
+                              const.CLOSE_AD_DIFF_THRESHOLD):
+            logger.debug(f"{get_emulator_and_adv_name(emulator_device)}: close ad found by image")
+            return True
+
+    return False
 
 
 def is_close_ad_present(emulator_device):
@@ -298,27 +333,28 @@ def is_close_ad_present(emulator_device):
         logger.debug(f"{get_emulator_and_adv_name(emulator_device)}: there is only DO NOT CLOSE button")
         return False
 
-    # Continue searching corner using text => ad close should contain X text
-    for psm in range(3, 9):
-        text = get_close_ad_text(emulator_device, psm)
-        # Search for chars that are acceptable as detected X
-        for char in const.CLOSE_BUTTON_WHITELIST_STRING:
-            if char in text:
-                logger.debug(f"{get_emulator_and_adv_name(emulator_device)}: close ad found by char: {char}")
-                return True
+    is_it = is_close_ad_text_present(emulator_device,
+                             get_cropped_screenshot_path(emulator_device, const.CLOSE_AD_BUTTON[const.NAME_KEY]))
 
-    logger.debug(f"{get_emulator_and_adv_name(emulator_device)}: X in ad not found as a text, checking for saved images of close ad buttons")
+    logger.debug(f"{get_emulator_and_adv_name(emulator_device)}: close ad {'' if is_it else 'NOT'} found by any way")
+    return is_it
 
-    for image in const.LIST_OF_CLOSEBUTTONS:
-        if are_images_similar(emulator_device,
-                              get_cropped_screenshot_path(emulator_device, const.CLOSE_AD_BUTTON[const.NAME_KEY]),
-                              os.path.join(const.ORIGINAL_ADS_CLOSE_BUTTONS_DIR_PATH, image),
-                              const.CLOSE_AD_DIFF_THRESHOLD):
-            logger.debug(f"{get_emulator_and_adv_name(emulator_device)}: close ad found by image")
-            return True
 
-    logger.debug(f"{get_emulator_and_adv_name(emulator_device)}: close ad not found by any way")
-    return False
+def is_reversed_close_ad_present(emulator_device):
+    crop_reversed_close_ad(emulator_device)
+
+    is_it = is_close_ad_text_present(emulator_device,
+                             get_cropped_screenshot_path(emulator_device, const.REVERSED_CLOSE_AD_BUTTON[const.NAME_KEY]))
+    return is_it
+
+
+def is_google_close_ad_present(emulator_device):
+    crop_google_close_ad(emulator_device)
+
+    is_it = is_close_ad_text_present(emulator_device,
+                             get_cropped_screenshot_path(emulator_device, const.GOOGLE_CLOSE_AD_BUTTON[const.NAME_KEY]))
+    return is_it
+
 
 
 def crop_quest(emulator_device, selected_quest):
@@ -515,6 +551,7 @@ def get_enhanced_image_path(image_path):
 # Enhance images
 def enhance_contrast(input_path, output_path, threshold=const.POLARIZE_THRESHOLD):
     image = Image.open(input_path)
+
     image = image.resize((image.width * const.RESIZE_RATIO, image.height * const.RESIZE_RATIO)).convert('L')
     image = ImageEnhance.Contrast(image).enhance(5)\
                                         .point(lambda x: 0 if x < threshold else 255, '1')\
@@ -522,6 +559,7 @@ def enhance_contrast(input_path, output_path, threshold=const.POLARIZE_THRESHOLD
                                         .filter(ImageFilter.MedianFilter(size=3))
 
     image = ImageOps.invert(image)
+
     image.save(output_path)
     time.sleep(0.5)
 
@@ -610,15 +648,26 @@ def go_to_tavern_using_key(emulator_device, must_be_in_tavern=True):
         go_to_tavern_using_key(emulator_device)
 
 
-def click_exit_ad(emulator_device):
+def click_exit_ad(emulator_device, exit_ad_location):
     logger.debug(f"{get_emulator_and_adv_name(emulator_device)}: exiting AD")
-    exit_ad_location = const.CLOSE_AD_BUTTON[const.CLICK_LOCATION_KEY]
     emulator_device.click(exit_ad_location[const.X_KEY], exit_ad_location[const.Y_KEY])
 
 
 def close_ad(emulator_device):
     logger.debug(f"{get_emulator_and_adv_name(emulator_device)}: closing ad")
-    click_exit_ad(emulator_device)
+    click_exit_ad(emulator_device, const.CLOSE_AD_BUTTON[const.CLICK_LOCATION_KEY])
+    time.sleep(1)
+
+
+def close_reversed_ad(emulator_device):
+    logger.debug(f"{get_emulator_and_adv_name(emulator_device)}: closing reversed ad")
+    click_exit_ad(emulator_device, const.REVERSED_CLOSE_AD_BUTTON[const.CLICK_LOCATION_KEY])
+    time.sleep(1)
+
+
+def close_google_ad(emulator_device):
+    logger.debug(f"{get_emulator_and_adv_name(emulator_device)}: closing google ad")
+    click_exit_ad(emulator_device, const.GOOGLE_CLOSE_AD_BUTTON[const.CLICK_LOCATION_KEY])
     time.sleep(1)
 
 
@@ -626,22 +675,32 @@ def close_ad_if_playing(emulator_device):
     logger.debug(f"{get_emulator_and_adv_name(emulator_device)}: close ad if playing")
     take_screenshot(emulator_device)
 
+    if is_google_close_ad_present(emulator_device):
+        close_google_ad(emulator_device)
+        return
+
     if is_close_ad_present(emulator_device):
         close_ad(emulator_device)
-        close_ad_if_playing(emulator_device)
-    else:
-        if is_in_tavern(emulator_device):
-            logger.debug(f"{get_emulator_and_adv_name(emulator_device)}: is in tavern")
+        return
+
+    if is_reversed_close_ad_present(emulator_device):
+        close_reversed_ad(emulator_device)
+        return
+
+    if is_in_tavern(emulator_device):
+        logger.debug(f"{get_emulator_and_adv_name(emulator_device)}: is in tavern")
 
 
 def drink_beer(emulator_device):
     logger.debug(f"{get_emulator_and_adv_name(emulator_device)}: Drinking beer")
     emulator_device.click(const.DRINK_BEER_MUSHROOM_BUTTON[const.CLICK_LOCATION_KEY][const.X_KEY],
                           const.DRINK_BEER_MUSHROOM_BUTTON[const.CLICK_LOCATION_KEY][const.Y_KEY])
+    time.sleep(0.5)
 
 
 def drink_beer_and_return_to_tavern(emulator_device):
-    drink_beer(emulator_device)
+    for times in range(6):
+        drink_beer(emulator_device)
     go_to_tavern_using_key(emulator_device)
 
 

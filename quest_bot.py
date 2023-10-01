@@ -77,6 +77,7 @@ def quest_loop(emulator):
                 if util.is_in_profile_selection(emulator):
                     util.login_and_go_to_tavern(emulator)
                 else:
+                    util.close_ad_if_playing(emulator)
                     if util.is_in_tavern(emulator):
                         if util.is_enough_thirst(emulator):
                             util.open_quest_from_npc(emulator)
@@ -104,8 +105,6 @@ def quest_loop(emulator):
                             logger.debug(f"{util.get_emulator_and_adv_name(emulator)}: is still in quest, cannot skip, waiting")
                             time.sleep(20)
                             continue
-                    elif util.is_close_ad_present(emulator):
-                        util.close_ad(emulator)
                     elif util.is_new_level_accept_present(emulator):
                         util.accept_new_level(emulator)
                     elif util.is_quest_done(emulator):
@@ -133,11 +132,11 @@ if __name__ == '__main__':
 
     # check installed adb
     util.check_cli_tools_installed()
-    util.clean_screenshots()
 
     adb = util.get_adb_client()
     emulator_device_list = adb.device_list()
-
+    # SKIP_EMULATORS = ["emulator-5562", "emulator-5554", "emulator-5556", "emulator-5558","emulator-5560"]
+    SKIP_EMULATORS = []
     thread_list = []
 
     if len(emulator_device_list) == 0 or (len(emulator_device_list) == 1 and emulator_device_list[0].info[const.STATE_KEY] == "offline"):
@@ -145,14 +144,11 @@ if __name__ == '__main__':
         exit(1)
 
     for device in emulator_device_list:
-        thread = threading.Thread(target=quest_loop, args=(device,))
-        thread.start()
-        thread_list.append(thread)
+        if device.serial not in SKIP_EMULATORS:
+            util.clean_screenshots(device)
+            thread = threading.Thread(target=quest_loop, args=(device,))
+            thread.start()
+            thread_list.append(thread)
 
-    try:
-        while True:
-            pass
-    except KeyboardInterrupt:
-        logger.debug("Program status: Ending program.")
-        for thread in thread_list:
-            thread.join()
+    for thread in thread_list:
+        thread.join()
