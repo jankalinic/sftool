@@ -2,8 +2,13 @@ import threading
 import time
 
 from common.custom_logger import logger, DEBUG_LEVEL
-from common import common_utils as util
 from common import constants as const
+from common import common_utils as util
+from common import adb_utils as adbutil
+from common import os_utils as osutil
+from common import ocr_utils as ocrutil
+from common import image_utils as imgutil
+from common import check_utils as check
 
 CAN_USE_MUSHROOMS_FOR_BEER = bool
 
@@ -13,12 +18,12 @@ def start_quest(emulator_device, quest_num):
     quest_click_location = const.QUEST_LIST[quest_num][const.CLICK_LOCATION_KEY]
     emulator_device.click(quest_click_location[const.X_KEY], quest_click_location[const.Y_KEY])
     # check if correct quest is selected
-    if util.is_selected_correct_quest(emulator_device, quest_num):
+    if check.is_selected_correct_quest(emulator_device, quest_num):
         start_quest_location = const.ACCEPT_QUEST_BUTTON[const.CLICK_LOCATION_KEY]
         emulator_device.click(start_quest_location[const.X_KEY], start_quest_location[const.Y_KEY])
         time.sleep(5)
     else:
-        if util.is_in_quest_selection(emulator_device):
+        if check.is_in_quest_selection(emulator_device):
             logger.debug(f"[{emulator_device.serial}]: Failed to start the quest -> try again")
             start_quest(emulator_device, quest_num)
         else:
@@ -27,7 +32,7 @@ def start_quest(emulator_device, quest_num):
 
 
 def select_best_quest(emulator_device):
-    logger.debug(f"{util.get_emulator_and_adv_name(emulator_device)}: Choosing best quest")
+    logger.debug(f"{adbutil.get_emulator_and_adv_name(emulator_device)}: Choosing best quest")
     # check stats for first quest
     gold_list = []
     exp_list = []
@@ -40,19 +45,19 @@ def select_best_quest(emulator_device):
 
         time.sleep(1)
 
-        util.take_screenshot(emulator_device)
-        util.crop_quest_numbers(emulator_device)
+        imgutil.take_screenshot(emulator_device)
+        imgutil.crop_quest_numbers(emulator_device)
 
-        gold = util.get_number_from_image(util.get_cropped_screenshot_path(emulator_device, const.GOLD_DATA[const.NAME_KEY]))
-        logger.debug(f"{util.get_emulator_and_adv_name(emulator_device)}: Current gold: {gold}")
+        gold = ocrutil.get_number_from_image(imgutil.get_cropped_screenshot_path(emulator_device, const.GOLD_DATA[const.NAME_KEY]))
+        logger.debug(f"{adbutil.get_emulator_and_adv_name(emulator_device)}: Current gold: {gold}")
         gold_list.append(gold)
 
-        exp = util.get_number_from_image(util.get_cropped_screenshot_path(emulator_device, const.EXP_DATA[const.NAME_KEY]))
-        logger.debug(f"{util.get_emulator_and_adv_name(emulator_device)}: Current exp: {exp}")
+        exp = ocrutil.get_number_from_image(imgutil.get_cropped_screenshot_path(emulator_device, const.EXP_DATA[const.NAME_KEY]))
+        logger.debug(f"{adbutil.get_emulator_and_adv_name(emulator_device)}: Current exp: {exp}")
         exp_list.append(exp)
 
-        time_seconds = util.get_number_from_image(util.get_cropped_screenshot_path(emulator_device, const.TIME_DATA[const.NAME_KEY]))
-        logger.debug(f"{util.get_emulator_and_adv_name(emulator_device)}: Current time: {time_seconds}")
+        time_seconds = ocrutil.get_number_from_image(imgutil.get_cropped_screenshot_path(emulator_device, const.TIME_DATA[const.NAME_KEY]))
+        logger.debug(f"{adbutil.get_emulator_and_adv_name(emulator_device)}: Current time: {time_seconds}")
         time_list.append(time_seconds)
 
     # TODO: Jirka logic to pick which quest is the best
@@ -62,7 +67,7 @@ def select_best_quest(emulator_device):
 
 
 def open_tavern_master_menu(emulator_device):
-    logger.debug(f"[{util.get_emulator_and_adv_name(emulator_device)}]: Open tavern menu")
+    logger.debug(f"[{adbutil.get_emulator_and_adv_name(emulator_device)}]: Open tavern menu")
     click_location = const.TAVERN_MASTER[const.CLICK_LOCATION_KEY]
     emulator_device.click(click_location[const.X_KEY], click_location[const.Y_KEY])
     time.sleep(0.5)
@@ -71,57 +76,47 @@ def open_tavern_master_menu(emulator_device):
 def quest_loop(emulator):
     logger.debug(f"Running quest loop for: {emulator.serial}")
     while True:
-        if util.is_emulator_attached(emulator):
-            util.take_screenshot(emulator)
-            if util.is_in_game(emulator):
-                if util.is_in_profile_selection(emulator):
-                    util.login_and_go_to_tavern(emulator)
-                else:
-                    util.close_ad_if_playing(emulator)
-                    if util.is_in_tavern(emulator):
-                        if util.is_enough_thirst(emulator):
-                            util.open_quest_from_npc(emulator)
-                            util.take_screenshot(emulator)
-                            if util.is_in_quest_selection(emulator):
-                                select_best_quest(emulator)
-                        else:
-                            open_tavern_master_menu(emulator)
-                            util.take_screenshot(emulator)
-                            if util.can_drink_more(emulator, CAN_USE_MUSHROOMS_FOR_BEER):
-                                util.drink_beer_and_return_to_tavern(emulator)
-                            else:
-                                logger.error(f"[{util.get_emulator_and_adv_name(emulator)}]: cannot do more quest. Terminating bot.")
-                                break
-                    elif util.is_in_quest(emulator):
-                        if util.is_quest_ad_present(emulator):
-                            util.skip_quest_with_ad(emulator)
-                        elif util.is_quest_ad_wo_hourglass_present(emulator):
-                            util.click_on_quest_ad_until_its_available(emulator)
-                        elif util.is_quest_done(emulator):
-                            util.exit_done_quest(emulator)
-                        elif util.is_ad_present(emulator):
-                            util.watch_ad_and_close_after(emulator)
-                        else:
-                            logger.debug(f"{util.get_emulator_and_adv_name(emulator)}: is still in quest, cannot skip, waiting")
-                            time.sleep(20)
-                            continue
-                    elif util.is_new_level_accept_present(emulator):
-                        util.accept_new_level(emulator)
-                    elif util.is_quest_done(emulator):
-                        util.exit_done_quest(emulator)
-                    elif util.is_in_quest_selection(emulator):
-                        util.go_to_tavern_using_key(emulator)
-                    elif util.is_dont_close_ad_button_present(emulator):
-                        util.go_to_tavern_using_key(emulator)
-                    else:
-                        logger.debug(f"{util.get_emulator_and_adv_name(emulator)}: is not in tavern and not in quest might still be in ad, wait for a 2s")
-                        time.sleep(2)
+        imgutil.take_screenshot(emulator)
+        if check.is_in_tavern(emulator):
+            if check.is_enough_thirst(emulator):
+                util.open_quest_from_npc(emulator)
+                imgutil.take_screenshot(emulator)
+                if check.is_in_quest_selection(emulator):
+                    select_best_quest(emulator)
             else:
-                logger.error(f"[{util.get_emulator_and_adv_name(emulator)}]: is not playing sf")
-                exit(1)
+                open_tavern_master_menu(emulator)
+                imgutil.take_screenshot(emulator)
+                if check.can_drink_more(emulator, CAN_USE_MUSHROOMS_FOR_BEER):
+                    util.drink_beer_and_return_to_tavern(emulator)
+                else:
+                    logger.error(
+                        f"[{adbutil.get_emulator_and_adv_name(emulator)}]: cannot do more quest. Terminating bot.")
+                    break
+        elif check.is_in_quest(emulator):
+            if check.is_quest_ad_present(emulator):
+                util.skip_quest_with_ad(emulator)
+            elif check.is_quest_ad_wo_hourglass_present(emulator):
+                util.click_on_quest_ad_until_its_available(emulator)
+            elif check.is_quest_done(emulator):
+                util.exit_done_quest(emulator)
+            elif check.is_ad_present(emulator):
+                util.watch_ad_and_close_after(emulator)
+            else:
+                logger.debug(f"{adbutil.get_emulator_and_adv_name(emulator)}: is still in quest, cannot skip, waiting")
+                time.sleep(20)
+                continue
+        elif check.is_new_level_accept_present(emulator):
+            util.accept_new_level(emulator)
+        elif check.is_quest_done(emulator):
+            util.exit_done_quest(emulator)
+        elif check.is_in_quest_selection(emulator):
+            util.go_to_tavern_using_key(emulator)
+        elif check.is_dont_close_ad_button_present(emulator):
+            util.go_to_tavern_using_key(emulator)
         else:
-            logger.error(f"[{util.get_emulator_and_adv_name(emulator)}]: is offline")
-            break
+            logger.debug(f"{adbutil.get_emulator_and_adv_name(emulator)}: is not in tavern and not in quest might still be in ad, wait for a 2s")
+            util.close_ad_if_playing(emulator)
+            time.sleep(2)
 
 
 if __name__ == '__main__':
@@ -131,21 +126,17 @@ if __name__ == '__main__':
     logger.info("Started Shakes_Quest_Bot")
 
     # check installed adb
-    util.check_cli_tools_installed()
-
-    adb = util.get_adb_client()
-    emulator_device_list = adb.device_list()
-    # SKIP_EMULATORS = ["emulator-5562", "emulator-5554", "emulator-5556", "emulator-5558","emulator-5560"]
-    SKIP_EMULATORS = []
+    osutil.check_cli_tools_installed()
     thread_list = []
+    SKIP_EMULATORS = []
+    # SKIP_EMULATORS = ["emulator-5562", "emulator-5554", "emulator-5556", "emulator-5558","emulator-5560"]
 
-    if len(emulator_device_list) == 0 or (len(emulator_device_list) == 1 and emulator_device_list[0].info[const.STATE_KEY] == "offline"):
-        logger.error("No running emulators, exiting now.")
-        exit(1)
+    emulator_device_list = adbutil.filter_emulators(adbutil.get_adb_client().device_list(), SKIP_EMULATORS)
+    adbutil.check_emulator_list(emulator_device_list)
+    osutil.clean_screenshots()
 
     for device in emulator_device_list:
         if device.serial not in SKIP_EMULATORS:
-            util.clean_screenshots(device)
             thread = threading.Thread(target=quest_loop, args=(device,))
             thread.start()
             thread_list.append(thread)
