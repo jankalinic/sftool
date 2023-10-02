@@ -66,6 +66,7 @@ def close_ad_if_playing(emulator_device):
         close_reversed_ad(emulator_device)
         return
 
+
 def drink_beer(emulator_device):
     logger.debug(f"{adbutil.get_emulator_and_adv_name(emulator_device)}: Drinking beer")
     emulator_device.click(const.DRINK_BEER_MUSHROOM_BUTTON[const.CLICK_LOCATION_KEY][const.X_KEY],

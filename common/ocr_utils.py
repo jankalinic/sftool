@@ -63,8 +63,6 @@ def get_number_from_image(image_path):
 
 
 def get_close_ad_text(image_path, config_psm):
-    imgutil.enhance_contrast(image_path, imgutil.get_contrasted_image_path(image_path))
-    imgutil.enhance_number_image(imgutil.get_contrasted_image_path(image_path), imgutil.get_enhanced_image_path(image_path))
 
     return get_text_from_image(imgutil.get_enhanced_image_path(image_path), f"--psm {config_psm}")
 

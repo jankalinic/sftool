@@ -63,12 +63,16 @@ def is_dont_close_ad_button_present(emulator_device):
 
 
 def is_close_ad_text_present(emulator_device, image_path):
-    for psm in const.PSM_CONFIG:
-        text = ocrutil.get_close_ad_text(image_path, psm)
-        for char in const.CLOSE_BUTTON_WHITELIST_STRING:
-            if char in text:
-                logger.debug(f"{adbutil.get_emulator_and_adv_name(emulator_device)}: close ad found by char: {char}")
-                return True
+    imgutil.enhance_contrast(image_path, imgutil.get_contrasted_image_path(image_path))
+    imgutil.enhance_number_image(imgutil.get_contrasted_image_path(image_path), imgutil.get_enhanced_image_path(image_path))
+    image_paths = [image_path, imgutil.get_enhanced_image_path(image_path), imgutil.get_contrasted_image_path(image_path)]
+    for img_path in image_paths:
+        for psm in const.PSM_CONFIG:
+            text = ocrutil.get_close_ad_text(img_path, psm)
+            for char in const.CLOSE_BUTTON_WHITELIST_STRING:
+                if char in text:
+                    logger.debug(f"{adbutil.get_emulator_and_adv_name(emulator_device)}: close ad found by char: {char}")
+                    return True
 
     logger.debug(f"{adbutil.get_emulator_and_adv_name(emulator_device)}: X in ad not found as a text")
     return False

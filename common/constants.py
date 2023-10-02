@@ -84,8 +84,8 @@ def new_button(name, dimensions, click_location):
 # BUTTONS
 # ----- ADS
 AD_BUTTON = new_button("ad", new_dimensions(110, 180, 275, 360), new_location(188, 277))
-CLOSE_AD_BUTTON = new_button("close-ad", new_dimensions(0, 0, 130, 150), new_location(1013, 55))
-REVERSED_CLOSE_AD_BUTTON = new_button("reversed-close-ad", new_dimensions(950, 0, 1080, 150), new_location(55, 65))
+CLOSE_AD_BUTTON = new_button("close-ad", new_dimensions(950, 0, 1080, 150), new_location(1013, 55))
+REVERSED_CLOSE_AD_BUTTON = new_button("reversed-close-ad", new_dimensions(0, 0, 130, 150), new_location(55, 65))
 GOOGLE_CLOSE_AD_BUTTON = new_button("google-close-ad", new_dimensions(943, 386, 1028, 459), new_location(989, 428))
 
 DONT_CLOSE_AD_BUTTON = new_button("dont-close-button", new_dimensions(980, 0, 1080, 100), new_location(0, 0))
