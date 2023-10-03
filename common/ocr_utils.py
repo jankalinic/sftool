@@ -11,7 +11,7 @@ from common import constants as const
 def are_images_similar(emulator_device, first_image, second_image, threshold):
     image_difference = CompareImage(first_image, second_image).compare_image()
     logger.debug(
-        f"{adbutil.get_emulator_and_adv_name(emulator_device)}: Compared "
+        f"{adbutil.full_name(emulator_device)}: Compared "
         f"({first_image.split('/')[-1]}) X ({second_image.split('/')[-1]}) difference: {image_difference}")
     return image_difference < threshold
 

@@ -1,5 +1,10 @@
 import os
 
+# ----------------
+# Initial config
+CAN_USE_MUSHROOMS_FOR_BEER = True
+# ----------------
+
 # PATHS
 IMAGE_EXTENSION = ".png"
 # ------
@@ -16,13 +21,14 @@ ORIGINAL_BUTTON_DIR_PATH = os.path.join(ORIGINAL_DIR_PATH, "buttons")
 SCREENSHOT_DIR_PATH = os.path.join(IMAGES_DIR_PATH, "screenshots")
 
 LIST_OF_CLOSEBUTTONS = [file for file in os.listdir(ORIGINAL_ADS_CLOSE_BUTTONS_DIR_PATH) if file.endswith(".png")]
-CLOSE_BUTTON_WHITELIST_STRING = "xyXY><»«"
+CLOSE_BUTTON_WHITELIST_STRING = "xX"
 # ------
 OFFLINE = "offline"
 NPC_SUFFIX = "npc"
 CROPPED_SUFFIX = "cropped"
 SCREENSHOT_SUFFIX = "screenshot"
 RESIZE_RATIO = 4
+TIME_DELAY = 1.5
 AVERAGE_EXP_PER_SEGMENT = 10000
 PSM_CONFIG = [13, 3, 4, 5, 6, 7, 8]
 
@@ -91,6 +97,8 @@ GOOGLE_CLOSE_AD_BUTTON = new_button("google-close-ad", new_dimensions(943, 386, 
 DONT_CLOSE_AD_BUTTON = new_button("dont-close-button", new_dimensions(980, 0, 1080, 100), new_location(0, 0))
 # ----- BEER
 DRINK_BEER_MUSHROOM_BUTTON = new_button("beer-mushroom-button", new_dimensions(578, 1425, 672, 1515), new_location(624, 1462))
+BEER_COUNT_IMAGE = new_button("beer-count", new_dimensions(550, 1300, 800, 1355), new_location(624, 1462))
+
 BEER_TAVERN_BUTTON = new_button("beer-button", new_dimensions(324, 1738, 443, 1858), new_location(324, 1738))
 # ----- QUEST
 ACCEPT_QUEST_BUTTON = new_button("accept-quest-button", new_dimensions(353, 1420, 728, 1505), new_location(533, 1450))
@@ -99,7 +107,7 @@ QUEST_DONE_OK_BUTTON = new_button("quest-done-ok-button", new_dimensions(315, 14
 NEW_LEVEL_OK_BUTTON = new_button("new-level-button", new_dimensions(400, 1450, 700, 1550), new_location(550, 1500))
 # -----------------------
 WALLPAPER_DATA = new_button("wallpaper", new_dimensions(200, 200, 800, 800), new_location(0, 0))
-PROFILE_BUTTON = new_button("profile-button", new_dimensions(0, 0, 155, 155), new_location(530, 995))
+PROFILE_BUTTON = new_button("profile-button", new_dimensions(255, 200, 820,280), new_location(530, 995))
 
 # QUESTS
 # ----------- NPCS
@@ -130,3 +138,4 @@ FIRST_QUEST = new_quest("first-quest", new_dimensions(409, 425, 471, 468), new_l
 SECOND_QUEST = new_quest("second-quest", new_dimensions(644, 425, 702, 468), new_location(680, 448))
 THIRD_QUEST = new_quest("third-quest", new_dimensions(878, 425, 949, 468), new_location(911, 448))
 QUEST_LIST = [FIRST_QUEST, SECOND_QUEST, THIRD_QUEST]
+# ----------------------
