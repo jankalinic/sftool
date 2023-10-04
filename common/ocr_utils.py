@@ -79,7 +79,7 @@ def get_raw_text_from_image(image_path, allowed_chars="-c tessedit_char_whitelis
 
 
 def get_close_ad_text(image_path, config_psm):
-    return get_text_from_image(imgutil.get_enhanced_image_path(image_path), f"--psm {config_psm}")
+    return get_text_from_image(image_path, f"--psm {config_psm}")
 
 
 def is_number(s):
