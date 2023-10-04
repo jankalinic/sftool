@@ -97,7 +97,7 @@ GOOGLE_CLOSE_AD_BUTTON = new_button("google-close-ad", new_dimensions(943, 386, 
 DONT_CLOSE_AD_BUTTON = new_button("dont-close-button", new_dimensions(980, 0, 1080, 100), new_location(0, 0))
 # ----- BEER
 DRINK_BEER_MUSHROOM_BUTTON = new_button("beer-mushroom-button", new_dimensions(578, 1425, 672, 1515), new_location(624, 1462))
-BEER_COUNT_IMAGE = new_button("beer-count", new_dimensions(550, 1300, 800, 1355), new_location(624, 1462))
+BEER_COUNT_IMAGE = new_button("beer-count", new_dimensions(600, 1300, 800, 1355), new_location(624, 1462))
 
 BEER_TAVERN_BUTTON = new_button("beer-button", new_dimensions(324, 1738, 443, 1858), new_location(324, 1738))
 # ----- QUEST
@@ -111,7 +111,7 @@ PROFILE_BUTTON = new_button("profile-button", new_dimensions(255, 200, 820,280),
 
 # QUESTS
 # ----------- NPCS
-TAVERN_MASTER = new_npc("tavern-master2", new_dimensions(779, 764, 879, 864), new_location(822, 815))
+TAVERN_MASTER = new_npc("tavern-master", new_dimensions(779, 764, 879, 864), new_location(822, 815))
 # ------
 DRUNKEN_GUY = new_npc("drunken-guy", new_dimensions(465, 946, 624, 1154), new_location(536, 1530))
 PRINCE_CHARMING = new_npc("prince-charming", new_dimensions(188, 1050, 355, 1175), new_location(264, 1122))

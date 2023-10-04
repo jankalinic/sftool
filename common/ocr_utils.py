@@ -36,7 +36,7 @@ def doubledot_number_to_seconds(number_with_doubledot):
     return (int(number_with_doubledot.split(":")[0]) * 60) + int(number_with_doubledot.split(":")[1])
 
 
-def get_number_from_image(image_path):
+def get_number_from_image(image_path, ):
     imgutil.enhance_contrast(image_path, imgutil.get_contrasted_image_path(image_path))
     imgutil.enhance_number_image(imgutil.get_contrasted_image_path(image_path), imgutil.get_enhanced_image_path(image_path))
 
@@ -59,11 +59,26 @@ def get_number_from_image(image_path):
                     logger.debug(f"{text}")
                     exit(1)
 
-    exit(1)
+        exit(1)
+
+
+def get_raw_text_from_image(image_path, allowed_chars="-c tessedit_char_whitelist=0123456789,:"):
+    imgutil.enhance_contrast(image_path, imgutil.get_contrasted_image_path(image_path))
+    imgutil.enhance_number_image(imgutil.get_contrasted_image_path(image_path), imgutil.get_enhanced_image_path(image_path))
+
+    text = ""
+
+    image_paths = [imgutil.get_enhanced_image_path(image_path), imgutil.get_contrasted_image_path(image_path)]
+    for image_pth in image_paths:
+        for psm_try in const.PSM_CONFIG:
+            text = get_text_from_image(image_pth, f"--psm {psm_try} {allowed_chars}")
+            if text != "" and len(text) > 1:
+                return text
+
+    return text
 
 
 def get_close_ad_text(image_path, config_psm):
-
     return get_text_from_image(imgutil.get_enhanced_image_path(image_path), f"--psm {config_psm}")
 
 

@@ -79,14 +79,18 @@ def drink_beer(emulator_device):
 
 def get_how_many_times_can_drink(emulator_device):
     imgutil.crop_screenshot(emulator_device, const.BEER_COUNT_IMAGE[const.DIMENSIONS_KEY], const.BEER_COUNT_IMAGE[const.NAME_KEY])
-    return ocrutil.get_number_from_image(imgutil.get_cropped_screenshot_path(emulator_device, const.BEER_COUNT_IMAGE[const.NAME_KEY]))
+    times = ocrutil.get_raw_text_from_image(imgutil.get_cropped_screenshot_path(emulator_device, const.BEER_COUNT_IMAGE[const.NAME_KEY]),
+                                           allowed_chars="-c tessedit_char_whitelist=0123456789/")
+    if times != "":
+        return int(times.split("/")[0])
+
+    return 0
 
 
 def drink_beer_and_return_to_tavern(emulator_device):
     can_drink_times = get_how_many_times_can_drink(emulator_device)
-    for times in range(min(6,can_drink_times)):
+    for times in range(min(6, can_drink_times + 1)):
         drink_beer(emulator_device)
-
 
     wait_until_in_tavern(emulator_device)
 
@@ -112,7 +116,9 @@ def open_quest_from_npc(emulator_device):
 
 def skip_quest_with_ad(emulator_device):
     logger.error(f"{adbutil.full_name(emulator_device)}: Skipping quest using Ad.")
-    watch_ad_and_close_after(emulator_device)
+    click_on_quest_ad(emulator_device)
+    time.sleep(8 * const.TIME_DELAY)
+    close_ad_if_playing(emulator_device)
 
 
 def click_exit_ad(emulator_device, exit_ad_location):
@@ -178,6 +184,7 @@ def open_tavern_master_menu_and_drink_if_possible(emulator_device):
     else:
         logger.error(
             f"[{adbutil.full_name(emulator_device)}]: cannot do more quest. Terminating bot.")
+        exit(0)
 
 
 
