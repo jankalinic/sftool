@@ -88,7 +88,9 @@ def get_how_many_times_can_drink(emulator_device):
 
 
 def drink_beer_and_return_to_tavern(emulator_device):
-    can_drink_times = get_how_many_times_can_drink(emulator_device)
+    can_drink_times = 10 - get_how_many_times_can_drink(emulator_device)
+    logger.debug(f"{adbutil.full_name(emulator_device)}: can drink {can_drink_times}")
+    # can drink max 5 beers at one time
     for times in range(min(6, can_drink_times + 1)):
         drink_beer(emulator_device)
 
