@@ -116,15 +116,16 @@ def is_google_close_ad_present(emulator_device):
     return is_it
 
 
-
 def is_selected_correct_quest(emulator_device, quest_num):
     selected_quest = const.QUEST_LIST[quest_num]
 
     imgutil.take_screenshot(emulator_device)
     imgutil.crop_quest(emulator_device, selected_quest)
+    img_path = imgutil.get_cropped_screenshot_path(emulator_device, selected_quest[const.NAME_KEY])
+    imgutil.enhance_grayscale(img_path, img_path)
 
     is_it = ocrutil.are_images_similar(emulator_device,
-                               imgutil.get_cropped_screenshot_path(emulator_device, selected_quest[const.NAME_KEY]),
+                               img_path,
                                selected_quest[const.PATH_KEY],
                                const.QUEST_TIERS_DIFF_THRESHOLD)
 
@@ -211,15 +212,16 @@ def is_in_profile_selection(emulator_device):
     return is_it
 
 
-
-
 def is_ad_present(emulator_device):
     imgutil.crop_ad(emulator_device)
-    logger.debug(f"[{emulator_device.serial}]: Looking for AD")
-    return ocrutil.are_images_similar(emulator_device,
+    logger.debug(f"[{adbutil.full_name(emulator_device)}]: Looking for AD")
+
+    is_it = ocrutil.are_images_similar(emulator_device,
                               imgutil.get_cropped_screenshot_path(emulator_device, const.AD_BUTTON[const.NAME_KEY]),
                               const.AD_BUTTON[const.PATH_KEY],
                               const.AD_IMAGE_THRESHOLD)
+
+    return is_it
 
 
 def can_drink_more(emulator_device, can_use_mushrooms=const.CAN_USE_MUSHROOMS_FOR_BEER):

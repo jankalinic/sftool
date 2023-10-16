@@ -238,6 +238,16 @@ def crop_number_image(in_image_path):
 
 # ----------------------
 # Enhance images
+
+def enhance_grayscale(input_path, output_path):
+    image = Image.open(input_path)
+
+    image = image.resize((image.width * const.RESIZE_RATIO, image.height * const.RESIZE_RATIO))
+    image = image.convert('L')
+    image.save(output_path)
+    time.sleep(0.5 * const.TIME_DELAY)
+
+
 def enhance_contrast(input_path, output_path, threshold=const.POLARIZE_THRESHOLD, enhance_contrast=5):
     image = Image.open(input_path)
 

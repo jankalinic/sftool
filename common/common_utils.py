@@ -63,12 +63,12 @@ def close_ad_if_playing(emulator_device):
 
     if check.is_dont_close_ad_button_present(emulator_device):
         logger.debug(f"{adbutil.full_name(emulator_device)}: there is only DO NOT CLOSE button")
-    elif check.is_google_close_ad_present(emulator_device):
-        close_google_ad(emulator_device)
+    # elif check.is_google_close_ad_present(emulator_device):
+    #     close_google_ad(emulator_device)
     elif check.is_close_ad_present(emulator_device):
         close_ad(emulator_device)
-    elif check.is_reversed_close_ad_present(emulator_device):
-        close_reversed_ad(emulator_device)
+    # elif check.is_reversed_close_ad_present(emulator_device):
+    #     close_reversed_ad(emulator_device)
 
 
 def drink_beer(emulator_device):
@@ -204,11 +204,20 @@ def click(emulator_device, click_location):
     emulator_device.click(click_location[const.X_KEY], click_location[const.Y_KEY])
     time.sleep(0.5 * const.TIME_DELAY)
 
+
+def open_game(emulator_device):
+    logger.debug(f"[{adbutil.full_name(emulator_device)}]: Open tavern menu")
+    click(emulator_device, const.GAME[const.CLICK_LOCATION_KEY])
+    time.sleep(10)
+
+
+
 # END GAME ACTIONS
 # ----------------------
 def start_quest(emulator_device, quest_num):
     logger.debug(f"[{emulator_device.serial}]: Starting quest [{quest_num}]")
     click(emulator_device, const.QUEST_LIST[quest_num][const.CLICK_LOCATION_KEY])
+
     # check if correct quest is selected
     if check.is_selected_correct_quest(emulator_device, quest_num):
         start_quest_location = const.ACCEPT_QUEST_BUTTON[const.CLICK_LOCATION_KEY]
@@ -230,6 +239,9 @@ def select_best_quest(emulator_device):
     exp_list = []
     time_list = []
 
+    indexer = 0
+    selected_quest = dict
+
     # already selected first quest
     for quest in const.QUEST_LIST:
         click(emulator_device, quest[const.CLICK_LOCATION_KEY])
@@ -239,9 +251,9 @@ def select_best_quest(emulator_device):
         imgutil.take_screenshot(emulator_device)
         imgutil.crop_quest_numbers(emulator_device)
 
-        gold = ocrutil.get_number_from_image(imgutil.get_cropped_screenshot_path(emulator_device, const.GOLD_DATA[const.NAME_KEY]))
-        logger.debug(f"{adbutil.full_name(emulator_device)}: Current gold: {gold}")
-        gold_list.append(gold)
+        # gold = ocrutil.get_number_from_image(imgutil.get_cropped_screenshot_path(emulator_device, const.GOLD_DATA[const.NAME_KEY]))
+        # logger.debug(f"{adbutil.full_name(emulator_device)}: Current gold: {gold}")
+        # gold_list.append(gold)
 
         exp = ocrutil.get_number_from_image(imgutil.get_cropped_screenshot_path(emulator_device, const.EXP_DATA[const.NAME_KEY]))
         logger.debug(f"{adbutil.full_name(emulator_device)}: Current exp: {exp}")
@@ -251,8 +263,15 @@ def select_best_quest(emulator_device):
         logger.debug(f"{adbutil.full_name(emulator_device)}: Current time: {time_seconds}")
         time_list.append(time_seconds)
 
+        tmp_indexer = (exp / time_seconds)
+
+        if tmp_indexer > indexer:
+            indexer = tmp_indexer
+            selected_quest = quest
+
     # TODO: Jirka logic to pick which quest is the best
-    pick_quest_num = exp_list.index(max(exp_list))
+    # pick_quest_num = exp_list.index(max(exp_list))
+    pick_quest_num = const.QUEST_LIST.index(selected_quest)
 
     start_quest(emulator_device, pick_quest_num)
 

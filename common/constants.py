@@ -2,7 +2,7 @@ import os
 
 # ----------------
 # Initial config
-CAN_USE_MUSHROOMS_FOR_BEER = True
+CAN_USE_MUSHROOMS_FOR_BEER = False
 # ----------------
 
 # PATHS
@@ -28,14 +28,14 @@ NPC_SUFFIX = "npc"
 CROPPED_SUFFIX = "cropped"
 SCREENSHOT_SUFFIX = "screenshot"
 RESIZE_RATIO = 4
-TIME_DELAY = 1.5
+TIME_DELAY = 0.1
 AVERAGE_EXP_PER_SEGMENT = 10000
 PSM_CONFIG = [13, 3, 4, 5, 6, 7, 8]
 
 # ------ THRESHOLDS
 QUEST_PROGRESS_BAR_DIFF_THRESHOLD = 0.2
 MENU_BUTTON_IMAGE_DIFF_THRESHOLD = 0.1
-AD_IMAGE_THRESHOLD = 0.12
+AD_IMAGE_THRESHOLD = 0.18
 CLOSE_AD_DIFF_THRESHOLD = 0.5
 QUEST_DIFF_THRESHOLD = 0.01
 QUEST_TIERS_DIFF_THRESHOLD = 0.02
@@ -86,10 +86,12 @@ def new_button(name, dimensions, click_location):
     return {NAME_KEY: name, PATH_KEY: os.path.join(ORIGINAL_BUTTON_DIR_PATH, (name + IMAGE_EXTENSION)), DIMENSIONS_KEY: dimensions, CLICK_LOCATION_KEY: click_location}
 
 
+
+GAME = new_button("game", new_dimensions(450, 350, 600, 500), new_location(530, 430))
 # ---------------------------
 # BUTTONS
 # ----- ADS
-AD_BUTTON = new_button("ad", new_dimensions(110, 180, 275, 360), new_location(188, 277))
+AD_BUTTON = new_button("ad", new_dimensions(150, 240, 200, 270), new_location(188, 277))
 CLOSE_AD_BUTTON = new_button("close-ad", new_dimensions(950, 0, 1080, 150), new_location(1013, 55))
 REVERSED_CLOSE_AD_BUTTON = new_button("reversed-close-ad", new_dimensions(0, 0, 130, 150), new_location(55, 65))
 GOOGLE_CLOSE_AD_BUTTON = new_button("google-close-ad", new_dimensions(943, 386, 1028, 459), new_location(989, 428))
@@ -106,7 +108,7 @@ QUEST_DONE_OK_BUTTON = new_button("quest-done-ok-button", new_dimensions(315, 14
 # ---------------------------------------------
 NEW_LEVEL_OK_BUTTON = new_button("new-level-button", new_dimensions(400, 1450, 700, 1550), new_location(550, 1500))
 # -----------------------
-WALLPAPER_DATA = new_button("wallpaper", new_dimensions(200, 200, 800, 800), new_location(0, 0))
+WALLPAPER_DATA = new_button("wallpaper", new_dimensions(300, 300, 350, 350), new_location(0, 0))
 PROFILE_BUTTON = new_button("profile-button", new_dimensions(255, 200, 820,280), new_location(530, 995))
 
 # QUESTS

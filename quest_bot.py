@@ -47,8 +47,8 @@ if __name__ == '__main__':
     osutil.check_cli_tools_installed()
 
     thread_list = []
-    SKIP_EMULATORS = []
-    # SKIP_EMULATORS = ["emulator-5562", "emulator-5554", "emulator-5556", "emulator-5558","emulator-5560"]
+    SKIP_EMULATORS = list()
+    # SKIP_EMULATORS = ["emulator-5554", "emulator-5556"]
 
     emulator_device_list = adbutil.filter_emulators(adbutil.get_adb_client().device_list(), SKIP_EMULATORS)
     adbutil.check_emulator_list(emulator_device_list)

@@ -9,7 +9,7 @@ def get_adb_client():
     return adbutils.AdbClient(host="127.0.0.1", port=5037)
 
 
-def full_name (emulator_device):
+def full_name(emulator_device):
     adb_command = f"adb -s {emulator_device.serial} emu avd name"
     result = str(subprocess.run(adb_command, shell=True, capture_output=True).stdout.decode()).split("\n")[0].replace(
         "\r", "")
@@ -35,3 +35,8 @@ def filter_emulators(emulator_list, skip_list):
 
 def get_emulator(emulator_number):
     return get_adb_client().device(f"emulator-{emulator_number}")
+
+
+def close_game(emulator_device):
+    adb_command = f"adb -s {emulator_device.serial}  shell am force-stop com.playagames.shakesfidget"
+    subprocess.run(adb_command, shell=True, check=True)

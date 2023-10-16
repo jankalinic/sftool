@@ -36,27 +36,32 @@ def doubledot_number_to_seconds(number_with_doubledot):
     return (int(number_with_doubledot.split(":")[0]) * 60) + int(number_with_doubledot.split(":")[1])
 
 
-def get_number_from_image(image_path, ):
+def get_number_from_image(image_path):
     imgutil.enhance_contrast(image_path, imgutil.get_contrasted_image_path(image_path))
     imgutil.enhance_number_image(imgutil.get_contrasted_image_path(image_path), imgutil.get_enhanced_image_path(image_path))
 
-    image_paths = [imgutil.get_enhanced_image_path(image_path), imgutil.get_contrasted_image_path(image_path)]
+    image_paths = [imgutil.get_enhanced_image_path(image_path), imgutil.get_contrasted_image_path(image_path), image_path]
     for image_pth in image_paths:
         for psm_try in const.PSM_CONFIG:
-            text = get_text_from_image(image_pth, f"--psm {psm_try} -c tessedit_char_whitelist=0123456789,:")
+            text = get_text_from_image(image_pth, f"--psm {psm_try} -c tessedit_char_whitelist=0123456789,qQ:")
+            logger.debug(f"{image_path} IS {text}")
             # sometimes text contains dot at the end
             if text != "" and len(text) > 1:
-                if text[-1] == ".":
+                if text[-1] == "." or text[-1] == ":":
                     text = text[:-1]
+
+                for number4 in ["q", "Q"]:
+                    if number4 in text:
+                        return text.replace(number4, "4")
 
                 if "." in text:
                     return float(re.match(r'(?P<decimal>\d+\.\d+)', text).group('decimal'))
-                elif ":" in text:
+                if ":" in text:
                     return doubledot_number_to_seconds(text)
-                elif is_number(text):
+                if is_number(text):
                     return int(''.join(filter(str.isdigit, text)))
                 else:
-                    logger.debug(f"{text}")
+                    logger.debug(f"Failed parse number {text}")
                     exit(1)
 
         exit(1)
