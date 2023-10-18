@@ -35,13 +35,19 @@ def reopen_game(emulator_device):
     adbutil.close_game(emulator_device)
     adbutil.go_home(emulator_device)
     adbutil.open_game(emulator_device)
-    go_to_tavern_using_key(emulator_device)
+    go_to_wheel_using_key(emulator_device)
 
 
 def go_to_tavern_using_key(emulator_device):
     logger.debug(f"{adbutil.full_name(emulator_device)}: Returning to tavern")
     press_key(emulator_device, 'r')
     press_key(emulator_device, 't')
+
+
+def go_to_wheel_using_key(emulator_device):
+    logger.debug(f"{adbutil.full_name(emulator_device)}: Returning to wheel")
+    press_key(emulator_device, 't')
+    press_key(emulator_device, 'r')
 
 
 def press_key(emulator_device, key):
