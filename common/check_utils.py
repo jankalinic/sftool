@@ -32,16 +32,31 @@ def is_in_tavern(emulator_device):
     return is_it
 
 
+def is_in_wheel(emulator_device):
+    # Screen must contain beer + not acceptQuest + not questworm
+    imgutil.crop_beer_button(emulator_device)
+
+    is_it = ocrutil.are_images_similar(emulator_device,
+                               imgutil.get_cropped_screenshot_path(emulator_device, const.BEER_TAVERN_BUTTON[const.NAME_KEY]),
+                               const.WHEEL_BUTTON[const.PATH_KEY],
+                               const.MENU_BUTTON_IMAGE_DIFF_THRESHOLD) and \
+            not is_in_quest_selection(emulator_device) and \
+            not is_in_quest(emulator_device)
+
+    logger.debug(f"{adbutil.full_name(emulator_device)}: is {'' if is_it else 'NOT'} in wheel")
+    return is_it
+
 
 def is_in_game(emulator_device):
-    imgutil.crop_wallpaper(emulator_device)
-    is_it = not ocrutil.are_images_similar(emulator_device,
-                                   imgutil.get_cropped_screenshot_path(emulator_device, const.WALLPAPER_DATA[const.NAME_KEY]),
-                                   const.WALLPAPER_DATA[const.PATH_KEY],
-                                   const.WALLPAPER_THRESHOLD)
-
-    logger.debug(f"{adbutil.full_name(emulator_device)}: is {'' if is_it else 'NOT'} in sfgame")
-    return is_it
+    return adbutil.is_in_game(emulator_device)
+    # imgutil.crop_wallpaper(emulator_device)
+    # is_it = not ocrutil.are_images_similar(emulator_device,
+    #                                imgutil.get_cropped_screenshot_path(emulator_device, const.WALLPAPER_DATA[const.NAME_KEY]),
+    #                                const.WALLPAPER_DATA[const.PATH_KEY],
+    #                                const.WALLPAPER_THRESHOLD)
+    #
+    # logger.debug(f"{adbutil.full_name(emulator_device)}: is {'' if is_it else 'NOT'} in sfgame")
+    # return is_it
 
 
 def is_in_quest_selection(emulator_device):

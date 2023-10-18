@@ -1,3 +1,5 @@
+import time
+
 import adbutils
 import subprocess
 
@@ -37,6 +39,26 @@ def get_emulator(emulator_number):
     return get_adb_client().device(f"emulator-{emulator_number}")
 
 
-def close_game(emulator_device):
-    adb_command = f"adb -s {emulator_device.serial}  shell am force-stop com.playagames.shakesfidget"
+def open_game(emulator_device):
+    adb_command = f"adb -s {emulator_device.serial} shell am start -n {const.SHAKES_APP_NAME}/com.unity3d.player.UnityPlayerActivity"
     subprocess.run(adb_command, shell=True, check=True)
+    time.sleep(10 * const.TIME_DELAY)
+
+
+def close_game(emulator_device):
+    adb_command = f"adb -s {emulator_device.serial} shell am force-stop {const.SHAKES_APP_NAME}"
+    subprocess.run(adb_command, shell=True, check=True)
+    time.sleep(3 * const.TIME_DELAY)
+
+
+def go_home(emulator_device):
+    adb_command = f"adb -s {emulator_device.serial} shell input keyevent 3"
+    subprocess.run(adb_command, shell=True, check=True)
+    time.sleep(3 * const.TIME_DELAY)
+
+
+def is_in_game(emulator_device):
+    adb_command = f"adb -s {emulator_device.serial} shell dumpsys activity activities | grep 'mResumed'"
+    result = str(subprocess.run(adb_command, shell=True, capture_output=True).stdout.decode())
+
+    return const.SHAKES_APP_NAME in result

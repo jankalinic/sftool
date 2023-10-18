@@ -23,6 +23,7 @@ SCREENSHOT_DIR_PATH = os.path.join(IMAGES_DIR_PATH, "screenshots")
 LIST_OF_CLOSEBUTTONS = [file for file in os.listdir(ORIGINAL_ADS_CLOSE_BUTTONS_DIR_PATH) if file.endswith(".png")]
 CLOSE_BUTTON_WHITELIST_STRING = "xX"
 # ------
+SHAKES_APP_NAME = "com.playagames.shakesfidget"
 OFFLINE = "offline"
 NPC_SUFFIX = "npc"
 CROPPED_SUFFIX = "cropped"
@@ -35,7 +36,7 @@ PSM_CONFIG = [13, 3, 4, 5, 6, 7, 8]
 # ------ THRESHOLDS
 QUEST_PROGRESS_BAR_DIFF_THRESHOLD = 0.2
 MENU_BUTTON_IMAGE_DIFF_THRESHOLD = 0.1
-AD_IMAGE_THRESHOLD = 0.18
+AD_IMAGE_THRESHOLD = 0.2
 CLOSE_AD_DIFF_THRESHOLD = 0.5
 QUEST_DIFF_THRESHOLD = 0.01
 QUEST_TIERS_DIFF_THRESHOLD = 0.02
@@ -100,7 +101,7 @@ DONT_CLOSE_AD_BUTTON = new_button("dont-close-button", new_dimensions(980, 0, 10
 # ----- BEER
 DRINK_BEER_MUSHROOM_BUTTON = new_button("beer-mushroom-button", new_dimensions(578, 1425, 672, 1515), new_location(624, 1462))
 BEER_COUNT_IMAGE = new_button("beer-count", new_dimensions(600, 1300, 800, 1355), new_location(624, 1462))
-
+WHEEL_BUTTON = new_button("wheel-button", new_dimensions(324, 1738, 443, 1858), new_location(324, 1738))
 BEER_TAVERN_BUTTON = new_button("beer-button", new_dimensions(324, 1738, 443, 1858), new_location(324, 1738))
 # ----- QUEST
 ACCEPT_QUEST_BUTTON = new_button("accept-quest-button", new_dimensions(353, 1420, 728, 1505), new_location(533, 1450))

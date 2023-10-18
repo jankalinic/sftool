@@ -12,17 +12,30 @@ from common import check_utils as check
 # ----------------
 # GAME ACTIONS
 def wait_until_in_tavern(emulator_device):
-    while True:
-        imgutil.take_screenshot(emulator_device)
-        imgutil.crop_beer_button(emulator_device)
-        go_to_tavern_using_key(emulator_device)
 
-        time.sleep(4 * const.TIME_DELAY)
+    imgutil.take_screenshot(emulator_device)
 
-        if check.is_in_tavern(emulator_device):
-            break
+    imgutil.crop_beer_button(emulator_device)
 
-        logger.debug(f"{adbutil.full_name(emulator_device)}: Return to tavern did not work")
+    go_to_tavern_using_key(emulator_device)
+
+    time.sleep(4 * const.TIME_DELAY)
+    logger.debug(f"{adbutil.full_name(emulator_device)}: Return to tavern did not work")
+
+    if not check.is_in_tavern(emulator_device):
+        wait_until_in_tavern(emulator_device)
+
+
+def open_game_if_not_opened(emulator_device):
+    if not check.is_in_game(emulator_device):
+        reopen_game(emulator_device)
+
+
+def reopen_game(emulator_device):
+    adbutil.close_game(emulator_device)
+    adbutil.go_home(emulator_device)
+    adbutil.open_game(emulator_device)
+    go_to_tavern_using_key(emulator_device)
 
 
 def go_to_tavern_using_key(emulator_device):
@@ -173,7 +186,7 @@ def login_and_go_to_tavern(emulator_device):
 
 def watch_ad_and_close_after(emulator_device):
     click_on_ad(emulator_device)
-    time.sleep(8 * const.TIME_DELAY)
+    time.sleep(2 * const.TIME_DELAY)
     close_ad_if_playing(emulator_device)
 
 
@@ -203,13 +216,6 @@ def open_tavern_master_menu(emulator_device):
 def click(emulator_device, click_location):
     emulator_device.click(click_location[const.X_KEY], click_location[const.Y_KEY])
     time.sleep(0.5 * const.TIME_DELAY)
-
-
-def open_game(emulator_device):
-    logger.debug(f"[{adbutil.full_name(emulator_device)}]: Open tavern menu")
-    click(emulator_device, const.GAME[const.CLICK_LOCATION_KEY])
-    time.sleep(10)
-
 
 
 # END GAME ACTIONS

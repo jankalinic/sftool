@@ -38,6 +38,7 @@ def quest_loop(emulator):
         else:
             logger.error(f"{adbutil.full_name(emulator)}: is not playing the game")
             time.sleep(10)
+            util.reopen_game(emulator)
 
 
 if __name__ == '__main__':
