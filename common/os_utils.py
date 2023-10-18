@@ -51,7 +51,7 @@ def check_cli_tools_installed():
         if "Version: ImageMagick" in str(result.stdout):
             logger.debug("Convert is installed.")
         else:
-            logger.warning("Convert is not installed. Please run: brew install imagemagick")
+            logger.warning("Convert is not installed. Please run: brew install imagemagick or visit https://imagemagick.org/script/download.php")
             raise Exception
 
         convert_command = "cairosvg --version"
@@ -59,7 +59,7 @@ def check_cli_tools_installed():
         if "2." in str(result.stdout):
             logger.debug("cairosvg is installed.")
         else:
-            logger.warning("cairosvg is not installed. Please run: pip3 install cairosvg")
+            logger.warning("cairosvg is not installed. Please run: pip3 install cairosvg or check lib-cairo symbolic links in mac")
             raise Exception
 
         convert_command = "potracer --version"
@@ -67,7 +67,7 @@ def check_cli_tools_installed():
         if "Potrace" in str(result.stdout):
             logger.debug("Potracer is installed.")
         else:
-            logger.warning("Potracer is not installed. Please run: pip3 install potracer")
+            logger.warning("Potracer is not installed. Please run: pip3 install potracer or pip3 install potrace-cli")
             raise Exception
     except Exception:
         exit(1)
