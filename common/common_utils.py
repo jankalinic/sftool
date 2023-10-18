@@ -31,11 +31,21 @@ def open_game_if_not_opened(emulator_device):
         reopen_game(emulator_device)
 
 
+def wait_for_reopen_game(emulator_device):
+    while True:
+        reopen_game(emulator_device)
+        time.sleep(10)
+        imgutil.take_screenshot(emulator_device)
+        if check.is_in_wheel(emulator_device):
+            break
+
+        time.sleep(10 * const.TIME_DELAY)
+
+
 def reopen_game(emulator_device):
     adbutil.close_game(emulator_device)
     adbutil.go_home(emulator_device)
     adbutil.open_game(emulator_device)
-    go_to_wheel_using_key(emulator_device)
 
 
 def go_to_tavern_using_key(emulator_device):
@@ -46,7 +56,7 @@ def go_to_tavern_using_key(emulator_device):
 
 def go_to_wheel_using_key(emulator_device):
     logger.debug(f"{adbutil.full_name(emulator_device)}: Returning to wheel")
-    press_key(emulator_device, 't')
+    press_key(emulator_device, 'p')
     press_key(emulator_device, 'r')
 
 
@@ -79,15 +89,8 @@ def close_google_ad(emulator_device):
 def close_ad_if_playing(emulator_device):
     logger.debug(f"{adbutil.full_name(emulator_device)}: close ad if playing")
     imgutil.take_screenshot(emulator_device)
-
-    if check.is_dont_close_ad_button_present(emulator_device):
-        logger.debug(f"{adbutil.full_name(emulator_device)}: there is only DO NOT CLOSE button")
-    # elif check.is_google_close_ad_present(emulator_device):
-    #     close_google_ad(emulator_device)
-    elif check.is_close_ad_present(emulator_device):
+    if check.is_close_ad_present(emulator_device):
         close_ad(emulator_device)
-    # elif check.is_reversed_close_ad_present(emulator_device):
-    #     close_reversed_ad(emulator_device)
 
 
 def drink_beer(emulator_device):
@@ -151,7 +154,7 @@ def click_on_quest_ad(emulator_device):
     click(emulator_device, const.QUEST_AD[const.CLICK_LOCATION_KEY])
 
 
-def click_on_quest_ad_until_its_available(emulator_device, tries=50):
+def click_on_quest_ad_until_its_available(emulator_device, tries=100):
     for x in range(tries):
         logger.error(f"{adbutil.full_name(emulator_device)}: Clicking quest ad times:{x}.")
         click_on_quest_ad(emulator_device)
@@ -160,10 +163,17 @@ def click_on_quest_ad_until_its_available(emulator_device, tries=50):
         imgutil.take_screenshot(emulator_device)
         imgutil.crop_quest_ad(emulator_device)
 
+        if not check.is_quest_ad_wo_hourglass_present(emulator_device):
+            reopen_game(emulator_device)
+            break
+
         if check.is_quest_ad_present(emulator_device):
             skip_quest_with_ad(emulator_device)
             break
-        elif x > tries:
+
+        if x == tries-2:
+            reopen_game(emulator_device)
+            time.sleep(10 * const.TIME_DELAY)
             break
 
 
@@ -192,7 +202,7 @@ def login_and_go_to_tavern(emulator_device):
 
 def watch_ad_and_close_after(emulator_device):
     click_on_ad(emulator_device)
-    time.sleep(2 * const.TIME_DELAY)
+    time.sleep(6)
     close_ad_if_playing(emulator_device)
 
 
@@ -295,11 +305,9 @@ def handle_quest(emulator_device):
         click_on_quest_ad_until_its_available(emulator_device)
     elif check.is_quest_done(emulator_device):
         exit_done_quest(emulator_device)
-    elif check.is_ad_present(emulator_device):
-        watch_ad_and_close_after(emulator_device)
     else:
         logger.debug(f"{adbutil.full_name(emulator_device)}: is still in quest, cannot skip, waiting")
-        time.sleep(20)
+        time.sleep(10)
 # -----------------
 # OTHER UTILS
 def to_box(dimensions):

@@ -98,6 +98,9 @@ def is_close_ad_present(emulator_device):
     imgutil.crop_close_ad(emulator_device)
     logger.debug(f"{adbutil.full_name(emulator_device)}: Looking for AD close button")
 
+    if is_dont_close_ad_button_present(emulator_device):
+        return False
+
     is_it = is_close_ad_text_present(emulator_device,
                                      imgutil.get_cropped_screenshot_path(emulator_device, const.CLOSE_AD_BUTTON[const.NAME_KEY]))
     if is_it:

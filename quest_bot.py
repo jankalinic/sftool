@@ -13,32 +13,30 @@ from common import check_utils as check
 
 def quest_loop(emulator):
     logger.debug(f"Running quest loop for: {emulator.serial}")
+
     while True:
         imgutil.take_screenshot(emulator)
-        if check.is_in_game(emulator):
-            if check.is_in_profile_selection(emulator):
-                util.login_and_go_to_tavern(emulator)
-            elif check.is_in_tavern(emulator):
-                if check.is_enough_thirst(emulator):
-                    util.complete_quest(emulator)
-                else:
-                    util.open_tavern_master_menu_and_drink_if_possible(emulator)
-            elif check.is_in_quest_selection(emulator):
-                util.select_best_quest(emulator)
-            elif check.is_in_quest(emulator):
-                util.handle_quest(emulator)
-            elif check.is_quest_done(emulator):
-                util.exit_done_quest(emulator)
-            elif check.is_new_level_accept_present(emulator):
-                util.accept_new_level(emulator)
+        if not check.is_in_game(emulator):
+            util.wait_for_reopen_game(emulator)
+            util.go_to_tavern_using_key(emulator)
+            continue
+        if check.is_in_tavern(emulator):
+            if check.is_enough_thirst(emulator):
+                util.complete_quest(emulator)
             else:
-                logger.debug(f"{adbutil.full_name(emulator)}: is not in tavern and not in quest might still be in ad, wait for a 2s")
-                util.close_ad_if_playing(emulator)
-                time.sleep(2)
+                util.open_tavern_master_menu_and_drink_if_possible(emulator)
+        elif check.is_in_quest_selection(emulator):
+            util.select_best_quest(emulator)
+        elif check.is_in_quest(emulator):
+            util.handle_quest(emulator)
+        elif check.is_quest_done(emulator):
+            util.exit_done_quest(emulator)
+        elif check.is_new_level_accept_present(emulator):
+            util.accept_new_level(emulator)
         else:
-            logger.error(f"{adbutil.full_name(emulator)}: is not playing the game")
-            time.sleep(10)
-            util.reopen_game(emulator)
+            logger.debug(f"{adbutil.full_name(emulator)}: is not in tavern and not in quest might still be in ad, wait for a 2s")
+            util.close_ad_if_playing(emulator)
+            time.sleep(2)
 
 
 if __name__ == '__main__':

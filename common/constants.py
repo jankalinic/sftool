@@ -134,7 +134,7 @@ EXP_DATA = new_quest_data("exp-number", new_dimensions(133, 1313, 330, 1373))
 TIME_DATA = new_quest_data("time-number", new_dimensions(133, 1390, 330, 1450))
 # ------
 QUEST_AD = new_quest("quest-ad", new_dimensions(767, 1420, 1048, 1494), new_location(888, 1444))
-QUEST_AD_WO_HOURGLASS = new_quest("quest-ad-without-hourglass", new_dimensions(591, 1388, 967, 1487), new_location(764, 1419))
+QUEST_AD_WO_HOURGLASS = new_quest("quest-ad-without-hourglass", new_dimensions(767, 1420, 1048, 1494), new_location(888, 1444))
 QUEST_PROGRESS_BAR = new_quest("quest-progress-bar", new_dimensions(641, 1638, 678, 1654), new_location(0, 0))
 # ------
 FIRST_QUEST = new_quest("first-quest", new_dimensions(409, 425, 471, 468), new_location(444, 448))

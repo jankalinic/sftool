@@ -42,7 +42,7 @@ def get_emulator(emulator_number):
 def open_game(emulator_device):
     adb_command = f"adb -s {emulator_device.serial} shell am start -n {const.SHAKES_APP_NAME}/com.unity3d.player.UnityPlayerActivity"
     subprocess.run(adb_command, shell=True, check=True)
-    time.sleep(10 * const.TIME_DELAY)
+    time.sleep(10)
 
 
 def close_game(emulator_device):
